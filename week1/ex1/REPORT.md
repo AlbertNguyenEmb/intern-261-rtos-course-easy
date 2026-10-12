@@ -1,6 +1,6 @@
 # Report — Week 1 / Ex1
 
-`student_id`: ______    Commit của PREDICTION.md: ______
+`student_id`: 2412477    Commit của PREDICTION.md: ______
 
 ## 1. Số đo
 | Đại lượng | Giá trị |

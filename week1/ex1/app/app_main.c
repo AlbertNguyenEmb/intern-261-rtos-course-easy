@@ -24,7 +24,8 @@ static void bringup_task(void *argument)
     (void)argument;
 
     for (;;) {
-        /* TODO */
+        HAL_GPIO_TogglePin(BLINK_GPIO_PORT, BLINK_GPIO_PIN);
+        vTaskDelay(pdMS_TO_TICKS(BLINK_PERIOD_MS));
     }
 }
 
@@ -32,9 +33,11 @@ void app_main(void)
 {
     /* TODO 3: create bringup_task with stack BRINGUP_STACK_WORDS and a priority
      *         you can justify. Check the return value — do not ignore it. */
+    BaseType_t result = xTaskCreate(bringup_task, "BringUp", BRINGUP_STACK_WORDS, NULL, tskIDLE_PRIORITY + 1, NULL);
 
+    configASSERT(result == pdPASS);
     /* TODO 4: start the scheduler. */
-
+    vTaskStartScheduler();
     /* Reaching this point means the scheduler returned: out of heap, or the
      * handlers in TODO 5 were never mapped. Trap here so it is visible. */
     for (;;) {

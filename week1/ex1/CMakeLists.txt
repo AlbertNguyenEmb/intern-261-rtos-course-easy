@@ -43,12 +43,24 @@ set(FREERTOS_HEAP "4" CACHE STRING "" FORCE)
 
 add_library(freertos_config INTERFACE)
 
+target_compile_definitions(freertos_config
+    INTERFACE
+        STM32F103xB
+        USE_HAL_DRIVER
+)
+
 target_include_directories(freertos_config
     INTERFACE
         ${CMAKE_CURRENT_SOURCE_DIR}/app
         ${CMAKE_CURRENT_SOURCE_DIR}/Core/Inc
+
+        # CMSIS
         ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Include
         ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/CMSIS/Device/ST/STM32F1xx/Include
+
+        # STM32 HAL
+        ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Inc
+        ${CMAKE_CURRENT_SOURCE_DIR}/Drivers/STM32F1xx_HAL_Driver/Inc/Legacy
 )
 
 # FreeRTOS kernel source
