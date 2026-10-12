@@ -141,3 +141,6 @@ Chi tiết từng bài (nội dung, API bắt buộc, output, tiêu chí đạt)
 ## 8. Dùng MCU khác?
 
 Được, nhưng bạn phải tự port và vẫn phải dùng đúng API gốc FreeRTOS. Mentor chỉ hỗ trợ STM32F1.
+
+I hope that my project will be completed 
+                    ---HCM 9/10/2026---
