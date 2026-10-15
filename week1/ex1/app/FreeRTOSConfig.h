@@ -6,6 +6,7 @@
 
 extern uint32_t SystemCoreClock;
 
+#define INCLUDE_uxTaskGetStackHighWaterMark 1
 /* Scheduler */
 #define configUSE_PREEMPTION                 1
 #define configUSE_TIME_SLICING               1
@@ -50,7 +51,7 @@ extern uint32_t SystemCoreClock;
 #define configMAX_SYSCALL_INTERRUPT_PRIORITY \
     (configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY << (8 - configPRIO_BITS))
 
-/* Handler mapping */\
+/* Handler mapping */
 
 #define vPortSVCHandler       SVC_Handler
 #define xPortPendSVHandler    PendSV_Handler

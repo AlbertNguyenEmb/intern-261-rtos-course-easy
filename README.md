@@ -144,3 +144,5 @@ Chi tiết từng bài (nội dung, API bắt buộc, output, tiêu chí đạt)
 
 I hope that my project will be completed 
                     ---HCM 9/10/2026---
+
+STM32_Programmer_CLI -c port=SWD -w build/flash_make/week1_ex1.elf -v -rst

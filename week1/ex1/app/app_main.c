@@ -15,6 +15,7 @@
 #define BLINK_GPIO_PORT GPIOA
 #define BLINK_GPIO_PIN_MASK ((uint16_t)(1U << BLINK_GPIO_PIN))
 
+volatile UBaseType_t bringup_stack_hwm = 0U;
 /* TODO 2: implement the bring-up task.
  *         - toggle the pin
  *         - block for BLINK_PERIOD_MS using vTaskDelay()
@@ -24,7 +25,8 @@ static void bringup_task(void *argument)
     (void)argument;
 
     for (;;) {
-        HAL_GPIO_TogglePin(BLINK_GPIO_PORT, BLINK_GPIO_PIN);
+        HAL_GPIO_TogglePin(BLINK_GPIO_PORT, BLINK_GPIO_PIN_MASK);
+        bringup_stack_hwm = uxTaskGetStackHighWaterMark(NULL);
         vTaskDelay(pdMS_TO_TICKS(BLINK_PERIOD_MS));
     }
 }

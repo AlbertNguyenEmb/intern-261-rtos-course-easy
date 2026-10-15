@@ -16,4 +16,8 @@ Sai số là ở khoảng 1 tick hoặc hơn tùy thời gian thực thi
 4. `BRINGUP_STACK_WORDS` = 128 words = 128 x 4 bytes. Task này có đủ không? Vì sao?
 Dự đoán đủ cho task đơn giản chỉ toggle GPIO và delay, nhưng cần kiểm chứng bằng stack high-water mark.
 5. Trước khi map handler, linker sẽ báo lỗi gì (đoạn nguyên văn thông báo):
-Em k biết sao nó k báo lỗi nữa anh Triều anh Huy ơi huhu có comment đoạn map rồi mà nó k lỗi 
+C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld.exe: third_party/FreeRTOS-Kernel/libfreertos_kernel.a(port.c.obj): in function `SVC_Handler':
+D:/ml_iot_lab_intern/intern-261-rtos-course-easy/week1/ex1/third_party/FreeRTOS-Kernel/portable/GCC/ARM_CM3/port.c:230: multiple definition of `SVC_Handler'; CMakeFiles/week1_ex1.dir/Core/Src/stm32f1xx_it.c.obj:D:/ml_iot_lab_intern/intern-261-rtos-course-easy/week1/ex1/Core/Src/stm32f1xx_it.c:146: first defined here
+C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld.exe: third_party/FreeRTOS-Kernel/libfreertos_kernel.a(port.c.obj): in function `PendSV_Handler':
+D:/ml_iot_lab_intern/intern-261-rtos-course-easy/week1/ex1/third_party/FreeRTOS-Kernel/portable/GCC/ARM_CM3/port.c:459: multiple definition of `PendSV_Handler'; CMakeFiles/week1_ex1.dir/Core/Src/stm32f1xx_it.c.obj:D:/ml_iot_lab_intern/intern-261-rtos-course-easy/week1/ex1/Core/Src/stm32f1xx_it.c:172: first defined here
+C:/PROGRA~2/ARMGNU~1/14EFD8~1.2RE/bin/../lib/gcc/arm-none-eabi/14.2.1/../../../../arm-none-eabi/bin/ld.exe: third_party/FreeRTOS-Kernel/libfreertos_kernel.a(port.c.obj): in function `SysTick_Handler':
