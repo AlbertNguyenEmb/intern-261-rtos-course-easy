@@ -1,6 +1,6 @@
 # Report — Week 1 / Ex2
 
-`student_id`: ______    Commit của PREDICTION.md: ______
+`student_id`: 2412477    Commit của PREDICTION.md: d2bc44a48dbcafe8e8d4dc2b14940254de6fa097
 
 ## 1. CPU share đo được
 | Cấu hình | A (%) | B (%) | C (%) | Time slice đo được | Ảnh |

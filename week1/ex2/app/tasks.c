@@ -11,29 +11,31 @@
 #include "params.h"
 #include "tasks.h"
 
-/* TODO: one helper that takes a port/pin and a work time, then three thin
- *       wrappers. Do not copy-paste the body three times. */
+static void run_task(GPIO_TypeDef *port, uint32_t pin, uint32_t work_us)
+{
+    const uint32_t pin_mask = 1UL << pin;
+
+    for (;;) {
+        port->BSRR = pin_mask;
+        dwt_busy_wait_us(work_us);
+        port->BSRR = pin_mask << 16U;
+    }
+}
 
 void task_a(void *argument)
 {
     (void)argument;
-    for (;;) {
-        /* TODO */
-    }
+    run_task(GPIOA, TASK_A_PIN, TASK_A_WORK_US);
 }
 
 void task_b(void *argument)
 {
     (void)argument;
-    for (;;) {
-        /* TODO */
-    }
+    run_task(GPIOA, TASK_B_PIN, TASK_B_WORK_US);
 }
 
 void task_c(void *argument)
 {
     (void)argument;
-    for (;;) {
-        /* TODO */
-    }
+    run_task(GPIOA, TASK_C_PIN, TASK_C_WORK_US);
 }

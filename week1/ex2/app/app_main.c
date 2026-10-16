@@ -7,14 +7,21 @@
 #include "main.h"
 #include "params.h"
 #include "tasks.h"
-
+#define EX2_STACK_WORDS 128U
 void app_main(void)
 {
+    BaseType_t result;
+
     dwt_init();
 
-    /* TODO: create the three tasks below with the priorities from params.h.
-     *       Keep the stacks as small as you can still justify — ex4 will make
-     *       you prove the number. */
+    result = xTaskCreate(task_a, "A", EX2_STACK_WORDS, NULL, TASK_A_PRIO, NULL);
+    configASSERT(result == pdPASS);
+
+    result = xTaskCreate(task_b, "B", EX2_STACK_WORDS, NULL, TASK_B_PRIO, NULL);
+    configASSERT(result == pdPASS);
+
+    result = xTaskCreate(task_c, "C", EX2_STACK_WORDS, NULL, TASK_C_PRIO, NULL);
+    configASSERT(result == pdPASS);
 
     vTaskStartScheduler();
 

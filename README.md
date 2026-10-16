@@ -36,10 +36,17 @@ Lệnh `gen_params.py` tạo `weekN/exM/app/params.h` và `weekN/exM/PARAMS.md`.
 (chu kỳ, priority, kích thước queue, deadline...) đều lấy từ đây. **Dùng sai MSSV = bài không được chấm.**
 
 ### Build và nạp
+
+Chọn bài cần build bằng biến `EXERCISE`. Toàn bộ bài dùng chung board-support
+trong `template/` và FreeRTOS kernel trong `third_party/`.
+
 ```bash
-cmake --preset Debug
+cmake --preset Debug -DEXERCISE=week1/ex2
 cmake --build --preset Debug
 ```
+
+Firmware của ví dụ trên được tạo tại `build/Debug/week1_ex2.elf`. Đổi sang bài
+khác bằng cách thay `week1/ex2`, ví dụ `-DEXERCISE=week1/ex1`.
 
 ---
 
@@ -116,6 +123,8 @@ Chi tiết từng bài (nội dung, API bắt buộc, output, tiêu chí đạt)
 
 ```
 .
+├── CMakeLists.txt           # build chung, chọn bài bằng -DEXERCISE=weekN/exM
+├── CMakePresets.json        # preset Debug/Release
 ├── README.md
 ├── SYLLABUS.md              # nội dung chi tiết 16 bài
 ├── template/                # project CubeMX (CMake) gốc, chưa có FreeRTOS
@@ -130,6 +139,10 @@ Chi tiết từng bài (nội dung, API bắt buộc, output, tiêu chí đạt)
     ├── REPORT.md            # kết quả đo + phân tích
     └── RUBRIC.md            # thang điểm
 ```
+
+`week1/ex1/app/FreeRTOSConfig.h` là cấu hình kernel dùng chung sau khi hoàn thành
+bài tích hợp Ex1. Mỗi target chỉ biên dịch các file `.c` trong `app/` của bài
+được chọn.
 
 ## 7. Tài liệu
 
