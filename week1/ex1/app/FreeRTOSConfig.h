@@ -13,7 +13,11 @@ extern uint32_t SystemCoreClock;
 
 /* CPU and kernel tick */
 #define configCPU_CLOCK_HZ                   (SystemCoreClock)
-#define configTICK_RATE_HZ                   1000
+#ifndef APP_TICK_RATE_HZ
+#define APP_TICK_RATE_HZ 1000
+#endif
+
+#define configTICK_RATE_HZ APP_TICK_RATE_HZ
 
 /* Task configuration */
 #define configMAX_PRIORITIES                 5

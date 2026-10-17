@@ -11,31 +11,36 @@
 #include "params.h"
 #include "tasks.h"
 
-static void run_task(GPIO_TypeDef *port, uint32_t pin, uint32_t work_us)
-{
-    const uint32_t pin_mask = 1UL << pin;
-
+/* TODO: one helper that takes a port/pin and a work time, then three thin
+ *       wrappers. Do not copy-paste the body three times. */
+static void gpio_work_task(GPIO_TypeDef *port, uint16_t pin, uint32_t work_us) {
     for (;;) {
-        port->BSRR = pin_mask;
+        HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
         dwt_busy_wait_us(work_us);
-        port->BSRR = pin_mask << 16U;
-    }
+        HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET);
 }
 
 void task_a(void *argument)
 {
     (void)argument;
-    run_task(GPIOA, TASK_A_PIN, TASK_A_WORK_US);
+    for (;;) {
+        gpio_work_task(GPIOA, (uint16_t)(1U << TASK_A_PIN), TASK_A_WORK_US);
+    }
 }
 
 void task_b(void *argument)
 {
     (void)argument;
-    run_task(GPIOA, TASK_B_PIN, TASK_B_WORK_US);
+    for (;;) {
+        gpio_work_task(GPIOA, (uint16_t)(1U << TASK_B_PIN), TASK_B_WORK_US);
+    }
 }
 
 void task_c(void *argument)
 {
     (void)argument;
-    run_task(GPIOA, TASK_C_PIN, TASK_C_WORK_US);
+    for (;;) {
+        gpio_work_task(GPIOA, (uint16_t)(1U << TASK_C_PIN), TASK_C_WORK_US);
+    }
+}
 }

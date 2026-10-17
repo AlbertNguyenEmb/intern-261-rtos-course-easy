@@ -1,0 +1,5 @@
+cfg,source,delay,tick_hz,periods_used,channel,min_ms,max_ms,avg_ms,jitter_us,drift_ms,samples_total,edges_total
+1,ex3_cfg1.csv,vTaskDelay,1000,500,D0,18.95,19.0,18.994,50.00000000000071,-3.0,268288,706
+2,ex3_cfg2.csv,xTaskDelayUntil,1000,500,logic,18.95,19.0,18.9942,50.00000000000071,-2.899999999999636,523264,1377
+3,ex3_cfg3.csv,vTaskDelay,100,500,logic,9.95,10.0,9.9969,50.00000000000071,-4501.55,972800,4865
+4,ex4_cfg4.csv,xTaskDelayUntil,100,500,D0,9.95,10.0,9.9969,50.00000000000071,-4501.55,1000000,5001
