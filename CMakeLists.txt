@@ -14,6 +14,9 @@ endif()
 set(DELAY_MODE 0 CACHE STRING "0=vTaskDelay, 1=xTaskDelayUntil")
 set(APP_TICK_RATE_HZ 1000 CACHE STRING "FreeRTOS tick rate")
 set(OVERHEAD_TEST 0 CACHE STRING "1=measure tick ISR overhead, 0=run periodic timing test")
+set(APP_USE_PREEMPTION 1 CACHE STRING "FreeRTOS preemptive scheduler: 0 or 1")
+set(EX2_MODE 2 CACHE STRING "Week1/Ex2 experiment mode: 2, 3, 4, or 5")
+set(EX2_C_WORK_MULTIPLIER 1 CACHE STRING "Week1/Ex2 task C work multiplier")
 set(EXERCISE "week1/ex2" CACHE STRING "Exercise directory to build")
 get_filename_component(EXERCISE_DIR "${EXERCISE}" ABSOLUTE
     BASE_DIR "${CMAKE_SOURCE_DIR}")
@@ -43,6 +46,8 @@ add_executable(${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     DELAY_MODE=${DELAY_MODE}
     OVERHEAD_TEST=${OVERHEAD_TEST}
+    EX2_MODE=${EX2_MODE}
+    EX2_C_WORK_MULTIPLIER=${EX2_C_WORK_MULTIPLIER}
 )
 
 # CubeMX-generated board support is shared by every exercise.
@@ -57,6 +62,7 @@ target_compile_definitions(freertos_config INTERFACE
     STM32F103xB
     USE_HAL_DRIVER
     APP_TICK_RATE_HZ=${APP_TICK_RATE_HZ}
+    APP_USE_PREEMPTION=${APP_USE_PREEMPTION}
 )
 target_include_directories(freertos_config INTERFACE
     ${CMAKE_SOURCE_DIR}/week1/ex1/app

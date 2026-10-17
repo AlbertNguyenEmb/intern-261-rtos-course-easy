@@ -8,7 +8,10 @@ extern uint32_t SystemCoreClock;
 
 #define INCLUDE_uxTaskGetStackHighWaterMark 1
 /* Scheduler */
-#define configUSE_PREEMPTION                 1
+#ifndef APP_USE_PREEMPTION
+#define APP_USE_PREEMPTION                   1
+#endif
+#define configUSE_PREEMPTION                 APP_USE_PREEMPTION
 #define configUSE_TIME_SLICING               1
 
 /* CPU and kernel tick */
