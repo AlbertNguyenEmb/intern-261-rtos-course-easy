@@ -17,10 +17,10 @@ void app_main(void)
     result = xTaskCreate(task_a, "A", EX2_STACK_WORDS, NULL, TASK_A_PRIO, NULL);
     configASSERT(result == pdPASS);
 
-    result = xTaskCreate(task_b, "B", EX2_STACK_WORDS, NULL, TASK_B_PRIO, NULL);
+    result = xTaskCreate(task_b, "B", EX2_STACK_WORDS, NULL, TASK_A_PRIO, NULL);
     configASSERT(result == pdPASS);
 
-    result = xTaskCreate(task_c, "C", EX2_STACK_WORDS, NULL, TASK_C_PRIO, NULL);
+    result = xTaskCreate(task_c, "C", EX2_STACK_WORDS, NULL, TASK_A_PRIO, NULL);
     configASSERT(result == pdPASS);
 
     vTaskStartScheduler();
