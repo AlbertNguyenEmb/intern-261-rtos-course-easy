@@ -16,11 +16,11 @@
 | Còn lại / chưa dùng | 9044|
 | **Tổng** | **20480** |
 
-2. `xPortGetFreeHeapSize()` ngay sau khi scheduler chạy: 600 bytes.
-   `HEAP_SIZE_BYTES` − số này = ____ . Số đó là của những gì?
+2. `xPortGetFreeHeapSize()` ngay sau khi scheduler chạy: khoảng 6000 bytes.
+   `HEAP_SIZE_BYTES` − số này = khoảng 2192 bytes. Số đó là của những gì?
    Phần heap đã dùng gồm stack và TCB của `dyn_task`,
 `ram_report_task`, timer queue và metadata của `heap_4`.
-3. High water mark dự đoán (words): dyn ____ , stat ____ , idle ____ , timer ____ .
+3. High water mark dự đoán (words): dyn 90, stat 58, idle 90, timer 80.
 | Task | HWM dự đoán |
 |---|---:|
 | `dyn_task` | khoảng 90 words |
@@ -30,7 +30,7 @@
 
 Hai task làm cùng công việc nên lượng stack thực dùng gần giống nhau.
 Do stack ban đầu khác nhau 32 words, HWM dự kiến cũng lệch khoảng 32 words.
-4. `dyn_task` có stack ____ words = ____ bytes. Mảng `HOG_DEPTH_BYTES` = ____ bytes.
+4. `dyn_task` có stack 160 words = 640 bytes. Mảng `HOG_DEPTH_BYTES` = 640 bytes.
    Hook tràn stack **có** chạy không? Vì sao?
    `dyn_task` có 160 words = 640 bytes. Mảng cục bộ có kích thước 640 bytes.
 Hook tràn stack được dự đoán sẽ chạy vì mảng đã chiếm toàn bộ stack, chưa kể
@@ -41,7 +41,7 @@ Trong `.map`, `ucHeap` luôn chiếm đủ 8192 bytes trong `.bss`.
 `xPortGetFreeHeapSize()` chỉ trả về phần chưa được cấp phát bên trong `ucHeap`.
 Chênh lệch gồm stack động, TCB động, timer queue và metadata của `heap_4`.
 
-6. Stack nhỏ nhất an toàn của `dyn_task` dự đoán: ____ words. Dựa vào đâu?
+6. Stack nhỏ nhất an toàn của `dyn_task` dự đoán: 96 words. Dựa vào đâu?
 Dự đoán stack nhỏ nhất an toàn của `dyn_task` là 96 words.
 Giá trị cuối cùng sẽ được chọn từ stack thực dùng cộng biên an toàn ít nhất
 32 words.
