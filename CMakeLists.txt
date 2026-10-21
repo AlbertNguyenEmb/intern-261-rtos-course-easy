@@ -14,6 +14,7 @@ endif()
 set(DELAY_MODE 0 CACHE STRING "0=vTaskDelay, 1=xTaskDelayUntil")
 set(APP_TICK_RATE_HZ 1000 CACHE STRING "FreeRTOS tick rate")
 set(OVERHEAD_TEST 0 CACHE STRING "1=measure tick ISR overhead, 0=run periodic timing test")
+set(ADD_EXTRA_STATIC_TASK 0 CACHE STRING "1=add the Week1/Ex4 trade-off task")
 set(APP_USE_PREEMPTION 1 CACHE STRING "FreeRTOS preemptive scheduler: 0 or 1")
 set(EX2_MODE 2 CACHE STRING "Week1/Ex2 experiment mode: 2, 3, 4, or 5")
 set(EX2_C_WORK_MULTIPLIER 1 CACHE STRING "Week1/Ex2 task C work multiplier")
@@ -46,6 +47,7 @@ add_executable(${PROJECT_NAME})
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     DELAY_MODE=${DELAY_MODE}
     OVERHEAD_TEST=${OVERHEAD_TEST}
+    ADD_EXTRA_STATIC_TASK=${ADD_EXTRA_STATIC_TASK}
     EX2_MODE=${EX2_MODE}
     EX2_C_WORK_MULTIPLIER=${EX2_C_WORK_MULTIPLIER}
 )
@@ -65,6 +67,7 @@ target_compile_definitions(freertos_config INTERFACE
     APP_USE_PREEMPTION=${APP_USE_PREEMPTION}
 )
 target_include_directories(freertos_config INTERFACE
+    ${EXERCISE_DIR}/app
     ${CMAKE_SOURCE_DIR}/week1/ex1/app
     ${CMAKE_SOURCE_DIR}/template/Core/Inc
     ${CMAKE_SOURCE_DIR}/template/Drivers/CMSIS/Include

@@ -1,0 +1,33 @@
+Week 1 / Ex4 safe-stack build: build/w1e4_safe72/week1_ex4.map
+
+Memory Configuration
+Name             Origin             Length             Attributes
+RAM              0x20000000         0x00005000         xrw
+FLASH            0x08000000         0x00010000         xr
+
+.data           0x20000000       0x10
+.bss            0x20000010     0x291c
+ .bss.ucHeap    0x20000908     0x2000
+
+._user_heap_stack
+                0x2000292c      0x604
+                0x20002930      _end
+                0x20002b30      . + _Min_Heap_Size
+                0x20002f30      . + _Min_Stack_Size
+
+_Min_Heap_Size  = 0x200
+_Min_Stack_Size = 0x400
+_sstack         = 0x20004c00
+_estack         = 0x20005000
+
+Calculations used in REPORT.md:
+RAM total                 = 0x5000 = 20480 bytes
+.data                     = 0x0010 =    16 bytes
+.bss total                = 0x291c = 10524 bytes
+FreeRTOS heap (ucHeap)    = 0x2000 =  8192 bytes
+.bss excluding ucHeap     = 10524 - 8192 = 2332 bytes
+main/MSP reserved stack   = 0x0400 =  1024 bytes
+remaining report category = 20480 - 16 - 2332 - 8192 - 1024 = 8916 bytes
+
+The 8916-byte category contains the 512-byte linker C-heap reservation,
+4 bytes of alignment, and 8400 bytes not otherwise reserved.
