@@ -11,6 +11,12 @@
 #include "params.h"
 #include "uart_guard.h"
 
+volatile uint32_t g_latency_last_us[WRITER_COUNT];
+volatile uint32_t g_latency_avg_us[WRITER_COUNT];
+volatile uint32_t g_latency_max_us[WRITER_COUNT];
+volatile uint32_t g_latency_count[WRITER_COUNT];
+volatile uint64_t g_latency_sum_us[WRITER_COUNT];
+
 /* TODO 1: one writer_task(void *argument) taking the writer index via the
  *         task parameter (argument), NOT WRITER_COUNT copy-pasted bodies.
  *         Format a MSG_LEN-byte string containing the writer id and a
@@ -38,13 +44,36 @@ void writer_task(void *argument)
         }
 
         while (used < (MSG_LEN - 2U)) {
-            msg[used] = (char)('A' + id);;
+            msg[used] = (char)('A' + id);
             used++;
         }
         msg[MSG_LEN - 2U] = '\r';
         msg[MSG_LEN - 1U] = '\n';
+        
+        uint32_t start_cycles; // cycle bat dau 
+        uint32_t elapsed_cycles;
+        uint32_t elapsed_us;
+        // Ghi lai thoi diem bat dau
+        start_cycles = DWT->CYCCNT;
 
         uart_guard_send(msg, MSG_LEN);
+        // Tinh thoi gian troi qua
+        elapsed_cycles = DWT->CYCCNT - start_cycles;
+        // Quy doi sang thoi gian thuc
+        elapsed_us = elapsed_cycles / (SystemCoreClock / 1000000U);
+
+        g_latency_last_us[id] = elapsed_us; // Tgian gan nhat 
+        g_latency_sum_us[id] += elapsed_us; // Tong thoi gian do
+        g_latency_count[id]++; // so lan do
+        g_latency_avg_us[id] = (uint32_t)(
+            g_latency_sum_us[id] / g_latency_count[id]
+        );
+
+        if (elapsed_us > g_latency_max_us[id]) {
+            g_latency_max_us[id] = elapsed_us;
+        }
+
+        
         seq++;
         (void)seq;
         vTaskDelay(pdMS_TO_TICKS(WRITER_PERIOD_MS));

@@ -15,6 +15,14 @@
 
 static UART_HandleTypeDef s_huart1;
 
+#if UART_GUARD_MODE == 2
+volatile uint32_t g_critical_last_us;
+volatile uint32_t g_critical_avg_us;
+volatile uint32_t g_critical_max_us;
+volatile uint32_t g_critical_count;
+volatile uint64_t g_critical_sum_us;
+#endif
+
 #if UART_GUARD_MODE == 1
 static SemaphoreHandle_t s_uart_mutex;
 #elif UART_GUARD_MODE == 3
@@ -70,6 +78,8 @@ void uart_guard_init(void)
     uart1_init();
 #if UART_GUARD_MODE == 1
     /* TODO 1: xSemaphoreCreateMutex(). Check for NULL. */
+    s_uart_mutex = xSemaphoreCreateMutex();
+    configASSERT(s_uart_mutex != NULL);
 #elif UART_GUARD_MODE == 3
     /* TODO 2: create s_gatekeeper_queue (length: pick and justify in
      *         REPORT.md), item size = MSG_LEN bytes.
@@ -82,19 +92,45 @@ void uart_guard_send(const char *buf, size_t len)
 #if UART_GUARD_MODE == 0
     /* The bug: no serialization at all. */
     /* TODO 3: HAL_UART_Transmit directly. */
-    (void)buf; (void)len;
+    uart_write_bytes(buf, len);
 
 #elif UART_GUARD_MODE == 1
     /* TODO 4: xSemaphoreTake(s_uart_mutex, portMAX_DELAY), transmit, Give.
      *         Every return path must Give — no early return between Take and
      *         Give. */
     (void)buf; (void)len;
-
+    if (xSemaphoreTake(s_uart_mutex, portMAX_DELAY) == pdTRUE) {
+        uart_write_bytes(buf, len);
+        configASSERT(
+            xSemaphoreGive(s_uart_mutex) == pdTRUE
+        );
+    }
 #elif UART_GUARD_MODE == 2
     /* TODO 5: taskENTER_CRITICAL(), transmit, taskEXIT_CRITICAL().
      *         Measure in REPORT.md how long the critical section holds IRQs
      *         off, as a function of MSG_LEN and UART_BAUD. */
-    (void)buf; (void)len;
+    uint32_t start_cycles;
+    uint32_t elapsed_us;
+
+    taskENTER_CRITICAL();
+    start_cycles = DWT->CYCCNT;
+    uart_write_bytes(buf, len);
+
+    elapsed_us = (DWT->CYCCNT - start_cycles) /
+                 (SystemCoreClock / 1000000U);
+
+    g_critical_last_us = elapsed_us;
+    g_critical_sum_us += elapsed_us;
+    g_critical_count++;
+    g_critical_avg_us = (uint32_t)(
+        g_critical_sum_us / g_critical_count
+    );
+
+    if (elapsed_us > g_critical_max_us) {
+        g_critical_max_us = elapsed_us;
+    }
+
+    taskEXIT_CRITICAL();
 
 #elif UART_GUARD_MODE == 3
     /* TODO 6: xQueueSend(s_gatekeeper_queue, buf, portMAX_DELAY).

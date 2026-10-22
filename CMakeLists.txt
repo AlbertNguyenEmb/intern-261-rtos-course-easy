@@ -51,6 +51,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     ADD_EXTRA_STATIC_TASK=${ADD_EXTRA_STATIC_TASK}
     EX2_MODE=${EX2_MODE}
     EX2_C_WORK_MULTIPLIER=${EX2_C_WORK_MULTIPLIER}
+    UART_GUARD_MODE=${UART_GUARD_MODE}
 )
 
 # CubeMX-generated board support is shared by every exercise.
