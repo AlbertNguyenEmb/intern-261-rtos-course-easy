@@ -12,6 +12,8 @@
 
 #define UART_BAUD        115200U
 #define UART_TIMEOUT_MS  100U
+#define GATEKEEPER_STACK_WORDS 256U
+#define GATEKEEPER_QUEUE_LENGTH WRITER_COUNT
 
 static UART_HandleTypeDef s_huart1;
 
@@ -27,6 +29,7 @@ volatile uint64_t g_critical_sum_us;
 static SemaphoreHandle_t s_uart_mutex;
 #elif UART_GUARD_MODE == 3
 static QueueHandle_t s_gatekeeper_queue;
+static TaskHandle_t s_writer_handles[WRITER_COUNT];
 #endif
 
 static void uart1_init(void)
@@ -84,6 +87,23 @@ void uart_guard_init(void)
     /* TODO 2: create s_gatekeeper_queue (length: pick and justify in
      *         REPORT.md), item size = MSG_LEN bytes.
      *         xTaskCreate(gatekeeper_task, ..., GATEKEEPER_PRIO). */
+    BaseType_t status;
+
+    s_gatekeeper_queue = xQueueCreate(
+        GATEKEEPER_QUEUE_LENGTH,
+        MSG_LEN
+    );
+    configASSERT(s_gatekeeper_queue != NULL);
+
+    status = xTaskCreate(
+        gatekeeper_task,
+        "uart_gate",
+        GATEKEEPER_STACK_WORDS,
+        NULL,
+        GATEKEEPER_PRIO,
+        NULL
+    );
+    configASSERT(status == pdPASS);
 #endif
 }
 
@@ -135,7 +155,28 @@ void uart_guard_send(const char *buf, size_t len)
 #elif UART_GUARD_MODE == 3
     /* TODO 6: xQueueSend(s_gatekeeper_queue, buf, portMAX_DELAY).
      *         The writer never touches UART directly in this mode. */
-    (void)buf; (void)len;
+    uint32_t writer_id;
+
+    configASSERT(len == MSG_LEN);
+    writer_id = (uint32_t)(buf[2] - '0');
+    configASSERT(writer_id < WRITER_COUNT);
+
+    /* Register before enqueue: the higher-priority gatekeeper can preempt the
+     * writer as soon as xQueueSend() makes it Ready. */
+    s_writer_handles[writer_id] = xTaskGetCurrentTaskHandle();
+
+    configASSERT(
+        xQueueSend(
+            s_gatekeeper_queue,
+            buf,
+            portMAX_DELAY
+        ) == pdPASS
+    );
+
+    /* Measure through actual UART completion, not just queue insertion. */
+    configASSERT(
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY) > 0U
+    );
 #endif
 }
 
@@ -145,10 +186,25 @@ void gatekeeper_task(void *argument)
     (void)argument;
     for (;;) {
         char msg[MSG_LEN];
+        uint32_t writer_id;
         /* TODO 7: xQueueReceive(s_gatekeeper_queue, msg, portMAX_DELAY), then
          *         HAL_UART_Transmit. This is the only task allowed to call
          *         HAL_UART_Transmit in this mode. */
-        (void)msg;
+        configASSERT(
+            xQueueReceive(
+                s_gatekeeper_queue,
+                msg,
+                portMAX_DELAY
+            ) == pdPASS
+        );
+
+        uart_write_bytes(msg, MSG_LEN);
+
+        writer_id = (uint32_t)(msg[2] - '0');
+        configASSERT(writer_id < WRITER_COUNT);
+        configASSERT(s_writer_handles[writer_id] != NULL);
+
+        xTaskNotifyGive(s_writer_handles[writer_id]);
     }
 }
 #endif
