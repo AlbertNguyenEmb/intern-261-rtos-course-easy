@@ -17,6 +17,7 @@ set(OVERHEAD_TEST 0 CACHE STRING "1=measure tick ISR overhead, 0=run periodic ti
 set(ADD_EXTRA_STATIC_TASK 0 CACHE STRING "1=add the Week1/Ex4 trade-off task")
 set(APP_USE_PREEMPTION 1 CACHE STRING "FreeRTOS preemptive scheduler: 0 or 1")
 set(EX2_MODE 2 CACHE STRING "Week1/Ex2 experiment mode: 2, 3, 4, or 5")
+set(UART_GUARD_MODE "0" CACHE STRING "UART guard mode: 0, 1, 2, 3")
 set(EX2_C_WORK_MULTIPLIER 1 CACHE STRING "Week1/Ex2 task C work multiplier")
 set(EXERCISE "week1/ex2" CACHE STRING "Exercise directory to build")
 get_filename_component(EXERCISE_DIR "${EXERCISE}" ABSOLUTE

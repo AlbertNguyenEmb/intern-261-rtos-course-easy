@@ -4,6 +4,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include <stdio.h>
+#include <stdint.h>
+#include <string.h>
 
 #include "main.h"
 #include "params.h"
@@ -22,6 +24,28 @@ void writer_task(void *argument)
 
     for (;;) {
         /* TODO 2 */
+        char msg[MSG_LEN];
+        int written;
+        size_t used;
+        // Ghi id va seq ra bo dem msg
+        written = snprintf(msg, MSG_LEN, "[W%lu seq=%06lu]", (unsigned long)id, (unsigned long)seq);
+        if (written < 0) {
+            used = 0U;
+        } else if ((size_t)written > (MSG_LEN - 2U)) {
+            used = MSG_LEN - 2U;
+        } else {
+            used = (size_t)written;
+        }
+
+        while (used < (MSG_LEN - 2U)) {
+            msg[used] = (char)('A' + id);;
+            used++;
+        }
+        msg[MSG_LEN - 2U] = '\r';
+        msg[MSG_LEN - 1U] = '\n';
+
+        uart_guard_send(msg, MSG_LEN);
+        seq++;
         (void)seq;
         vTaskDelay(pdMS_TO_TICKS(WRITER_PERIOD_MS));
     }

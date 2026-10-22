@@ -10,14 +10,64 @@
 #include "params.h"
 #include "uart_guard.h"
 
+#define UART_BAUD        115200U
+#define UART_TIMEOUT_MS  100U
+
+static UART_HandleTypeDef s_huart1;
+
 #if UART_GUARD_MODE == 1
 static SemaphoreHandle_t s_uart_mutex;
 #elif UART_GUARD_MODE == 3
 static QueueHandle_t s_gatekeeper_queue;
 #endif
 
+static void uart1_init(void)
+{
+    GPIO_InitTypeDef gpio = {0};
+
+    __HAL_RCC_GPIOA_CLK_ENABLE();
+    __HAL_RCC_USART1_CLK_ENABLE();
+
+    gpio.Pin = GPIO_PIN_9;
+    gpio.Mode = GPIO_MODE_AF_PP;
+    gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &gpio);
+
+    s_huart1.Instance = USART1;
+    s_huart1.Init.BaudRate = UART_BAUD;
+    s_huart1.Init.WordLength = UART_WORDLENGTH_8B;
+    s_huart1.Init.StopBits = UART_STOPBITS_1;
+    s_huart1.Init.Parity = UART_PARITY_NONE;
+    s_huart1.Init.Mode = UART_MODE_TX;
+    s_huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    s_huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+
+    configASSERT(HAL_UART_Init(&s_huart1) == HAL_OK);
+}
+// send each byte uart
+static void uart_write_bytes(const char *buf, size_t len)
+{
+    for (size_t i = 0U; i < len; i++) {
+        HAL_StatusTypeDef status;
+
+        do {
+            status = HAL_UART_Transmit(
+                &s_huart1,
+                (uint8_t *)&buf[i],
+                1U,
+                UART_TIMEOUT_MS
+            );
+
+            if (status == HAL_BUSY) {
+                taskYIELD();
+            }
+        } while (status == HAL_BUSY);
+    }
+}
+
 void uart_guard_init(void)
 {
+    uart1_init();
 #if UART_GUARD_MODE == 1
     /* TODO 1: xSemaphoreCreateMutex(). Check for NULL. */
 #elif UART_GUARD_MODE == 3
