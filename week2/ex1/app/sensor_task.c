@@ -149,10 +149,6 @@ void sensor_task(void *argument)
         /* TODO 3: xQueueSend(queue_raw, &s, <timeout>) — pick and justify the
          *         timeout in PREDICTION.md question 3/4. What happens to this
          *         sample if the queue is full and the timeout expires? */
-        vTaskDelayUntil(
-            &last_wake,
-            pdMS_TO_TICKS(SAMPLE_PERIOD_MS)
-        );
         vTaskDelayUntil(&last_wake, pdMS_TO_TICKS(SAMPLE_PERIOD_MS));
     }
 }

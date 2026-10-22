@@ -44,12 +44,15 @@ void app_main(void)
     /* TODO 2: xTaskCreate sensor_task, filter_task, uart_task.
      *         Pick priorities you can justify in REPORT.md: who must never be
      *         starved by whom? */
-    status = xTaskCreate(sensor_task, "sensor", 256U, NULL, 2U, NULL);
+    status = xTaskCreate(sensor_task, "sensor", SENSOR_STACK_WORDS, NULL, SENSOR_TASK_PRIORITY, NULL);
     configASSERT(status == pdPASS);
 
     /* TODO 3: xTaskCreate depth_logger_task — must not perturb the pipeline it
      *         is measuring (think about its own priority and period). */
     status = xTaskCreate(uart_task, "uart", UART_STACK_WORDS, NULL, UART_TASK_PRIORITY, NULL);
+    configASSERT(status == pdPASS);
+
+    status = xTaskCreate(depth_logger_task, "depth_log", LOGGER_STACK_WORDS, NULL, LOGGER_TASK_PRIORITY, NULL);
     configASSERT(status == pdPASS);
     vTaskStartScheduler();
 

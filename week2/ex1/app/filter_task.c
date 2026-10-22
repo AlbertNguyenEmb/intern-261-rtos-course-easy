@@ -9,11 +9,11 @@
 #include "params.h"
 #include "pipeline.h"
 
+volatile uint32_t g_filter_processed_count;
+volatile uint32_t g_filtered_drop_count;
+
 void filter_task(void *argument)
 {   
-    volatile uint32_t g_filter_processed_count;
-    volatile uint32_t g_filtered_drop_count;
-
     int16_t ax_window[FILTER_WINDOW] = {0};
     int16_t ay_window[FILTER_WINDOW] = {0};
     int16_t az_window[FILTER_WINDOW] = {0};
