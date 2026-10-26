@@ -24,3 +24,4 @@
 5. Nếu đổi `task_mid` sang ưu tiên **thấp hơn** `task_low`, inversion còn xảy ra
    không? Vì sao (đây là cách phân biệt priority inversion với việc chỉ đơn
    giản là "task_low chạy lâu").
+   Không vì khi đó task_low sẽ được chạy được trên quyền task_mid sau đó nó sẽ trả mutex và task high tiếp tục chạy được.
