@@ -20,7 +20,10 @@ set(EX2_MODE 2 CACHE STRING "Week1/Ex2 experiment mode: 2, 3, 4, or 5")
 set(UART_GUARD_MODE "0" CACHE STRING "UART guard mode: 0, 1, 2, 3")
 set(EX2_C_WORK_MULTIPLIER 1 CACHE STRING "Week1/Ex2 task C work multiplier")
 set(EXERCISE "week1/ex2" CACHE STRING "Exercise directory to build")
-set(RESOURCE_MODE "0" CACHE STRING"Week2/Ex3 resource: 0=binary semaphore, 1=mutex")
+set(RESOURCE_MODE "0" CACHE STRING
+    "Week2/Ex3 resource: 0=binary semaphore, 1=mutex")
+set(PRODUCER0_USE_NOTIFY 0 CACHE STRING
+    "Week2/Ex4 sync: 0=all event-group, 1=producer0 task notification")
 get_filename_component(EXERCISE_DIR "${EXERCISE}" ABSOLUTE
     BASE_DIR "${CMAKE_SOURCE_DIR}")
 
@@ -53,6 +56,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     EX2_MODE=${EX2_MODE}
     EX2_C_WORK_MULTIPLIER=${EX2_C_WORK_MULTIPLIER}
     UART_GUARD_MODE=${UART_GUARD_MODE}
+    RESOURCE_MODE=${RESOURCE_MODE}
+    PRODUCER0_USE_NOTIFY=${PRODUCER0_USE_NOTIFY}
 )
 
 # CubeMX-generated board support is shared by every exercise.
