@@ -11,19 +11,12 @@
 
 Sensor tạo một mẫu mỗi `SAMPLE_PERIOD_MS = 10 ms`, nên:
 
-\[
-f_s = \frac{1000}{10} = 100\ \text{mẫu/s}
-\]
+`f_s = \frac{1000}{10} = 100\ \text{mẫu/s}`
 
 Một dòng UART trong trường hợp xấu nhất có chiều dài khoảng 33 byte.
 Với cấu hình 8N1, mỗi byte cần 10 bit:
 
-\[
-T_{UART} =
-\frac{33 \times 10}{230400}
-\approx 1.432\ \text{ms}
-\]
-
+`T_{UART} = \frac{33 \times 10}{230400} \approx 1.432\ \text{ms}`
 Vì thời gian truyền UART nhỏ hơn chu kỳ tạo mẫu 10 ms, UART có thể
 truyền xong một mẫu trước khi mẫu tiếp theo xuất hiện. Do đó dự đoán
 queue tối thiểu là một phần tử cho cả hai queue.
@@ -63,11 +56,7 @@ do đó queue không tích lũy và không có mẫu bị drop.
 Khi hạ baud rate xuống 9600, thời gian truyền một dòng UART trong
 trường hợp xấu nhất là:
 
-\[
-T_{UART,9600} =
-\frac{33 \times 10}{9600}
-\approx 34.375\ \text{ms}
-\]
+`T_{UART,9600} = \frac{33 \times 10}{9600} \approx 34.375\ \text{ms}`
 
 Giá trị này lớn hơn chu kỳ tạo mẫu 10 ms, do đó UART tiêu thụ dữ liệu
 chậm hơn tốc độ filter tạo ra dữ liệu. `queue_filtered` tăng nhanh,
