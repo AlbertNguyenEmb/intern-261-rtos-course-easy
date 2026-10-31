@@ -8,12 +8,15 @@
 #include "dwt.h"
 #include "sync_tasks.h"
 
-#define ALL_BITS_MASK ((((EventBits_t)1U << EVENT_BIT_COUNT) - (EventBits_t)1U))
+#define ALL_BITS_MASK \
+    ((((EventBits_t)1U << EX4_ACTIVE_PRODUCER_COUNT) - (EventBits_t)1U))
 #define REMAINING_BITS_MASK (ALL_BITS_MASK & ~(EventBits_t)1U)
 #define UART_BAUD 115200U
+#define UART_LOG_INTERVAL 50U
 
-_Static_assert(EVENT_BIT_COUNT > 1, "EVENT_BIT_COUNT must be greater than 1");
-_Static_assert(EVENT_BIT_COUNT <= 24,
+_Static_assert(EX4_ACTIVE_PRODUCER_COUNT > 1,
+               "At least two producers are required");
+_Static_assert(EX4_ACTIVE_PRODUCER_COUNT <= 24,
                "A 32-bit FreeRTOS event group has 24 usable bits");
 
 static EventGroupHandle_t s_events;
@@ -24,6 +27,16 @@ void *sync_task_handle;
 
 volatile uint32_t g_event_group_object_bytes;
 volatile uint32_t g_event_group_heap_bytes;
+volatile uint32_t g_heap_before_bytes;
+volatile uint32_t g_heap_after_bytes;
+volatile uint32_t g_heap_after_tasks_bytes;
+volatile uint32_t g_total_heap_used_bytes;
+volatile uint32_t g_notification_extra_bytes;
+volatile uint32_t g_ram_debug_mode;
+volatile uint32_t g_ram_debug_ready;
+volatile uint32_t g_tasks_debug_ready;
+volatile uint32_t g_test_producer_count;
+volatile uint32_t g_test_force_timeout;
 volatile uint32_t g_sync_count;
 volatile uint32_t g_timeout_count;
 volatile uint32_t g_last_sync_period_ticks;
@@ -31,6 +44,23 @@ volatile uint32_t g_last_wakeup_cycles;
 volatile uint32_t g_min_wakeup_cycles = UINT32_MAX;
 volatile uint32_t g_max_wakeup_cycles;
 volatile uint32_t g_average_wakeup_cycles;
+
+/* Put a debugger breakpoint in this function.  All RAM measurement globals
+ * are final when execution reaches this marker. */
+__attribute__((noinline)) void ram_debug_measurement_ready(void)
+{
+    __NOP();
+}
+
+/* Second breakpoint marker: Event Group and all application tasks now exist. */
+__attribute__((noinline)) void ram_debug_tasks_created(void)
+{
+    g_heap_after_tasks_bytes = (uint32_t)xPortGetFreeHeapSize();
+    g_total_heap_used_bytes =
+        g_heap_before_bytes - g_heap_after_tasks_bytes;
+    g_tasks_debug_ready = 1U;
+    __NOP();
+}
 
 static void uart_init(void)
 {
@@ -105,16 +135,32 @@ static void update_wakeup_statistics(uint32_t cycles)
 
 void sync_init(void)
 {
-    size_t heap_before;
+    void *heap_probe;
 
     uart_init();
+    g_ram_debug_ready = 0U;
+    g_tasks_debug_ready = 0U;
+    g_ram_debug_mode = (uint32_t)PRODUCER0_USE_NOTIFY;
+    g_notification_extra_bytes = 0U;
+    g_test_producer_count = (uint32_t)EX4_ACTIVE_PRODUCER_COUNT;
+    g_test_force_timeout = (uint32_t)EX4_FORCE_TIMEOUT;
+
+    /* heap_4 initializes its free-list on the first allocation.  Warm it up
+     * before taking heap_before, otherwise the initial value is zero and the
+     * unsigned subtraction below underflows. */
+    heap_probe = pvPortMalloc(1U);
+    configASSERT(heap_probe != NULL);
+    vPortFree(heap_probe);
 
     g_event_group_object_bytes = (uint32_t)sizeof(StaticEventGroup_t);
-    heap_before = xPortGetFreeHeapSize();
+    g_heap_before_bytes = (uint32_t)xPortGetFreeHeapSize();
     s_events = xEventGroupCreate();
     configASSERT(s_events != NULL);
-    g_event_group_heap_bytes =
-        (uint32_t)(heap_before - xPortGetFreeHeapSize());
+    g_heap_after_bytes = (uint32_t)xPortGetFreeHeapSize();
+    g_event_group_heap_bytes = g_heap_before_bytes - g_heap_after_bytes;
+
+    g_ram_debug_ready = 1U;
+    ram_debug_measurement_ready();
 }
 
 void producer_task(void *argument)
@@ -122,7 +168,7 @@ void producer_task(void *argument)
     uint32_t idx = (uint32_t)(uintptr_t)argument;
     uint32_t random_state = 0x12345678U ^ ((idx + 1U) * 0x9E3779B9U);
 
-    configASSERT(idx < EVENT_BIT_COUNT);
+    configASSERT(idx < EX4_ACTIVE_PRODUCER_COUNT);
 
     for (;;) {
         uint32_t delay_ms;
@@ -133,6 +179,12 @@ void producer_task(void *argument)
         random_state ^= random_state << 5;
         delay_ms = 1U + (random_state % NOTIFY_PERIOD_MS);
         vTaskDelay(pdMS_TO_TICKS(delay_ms));
+
+#if EX4_FORCE_TIMEOUT
+        if (idx == (EX4_ACTIVE_PRODUCER_COUNT - 1U)) {
+            vTaskDelay(pdMS_TO_TICKS(SYNC_TIMEOUT_MS + 20U));
+        }
+#endif
 
 #if PRODUCER0_USE_NOTIFY
         if (idx == 0U) {
@@ -162,10 +214,24 @@ void sync_task(void *argument)
 #else
     uart_puts("event-group");
 #endif
+    uart_puts(" producers=");
+    uart_put_u32(g_test_producer_count);
+    uart_puts(" force_timeout=");
+    uart_put_u32(g_test_force_timeout);
     uart_puts(" object_bytes=");
     uart_put_u32(g_event_group_object_bytes);
+    uart_puts(" heap_before=");
+    uart_put_u32(g_heap_before_bytes);
+    uart_puts(" heap_after=");
+    uart_put_u32(g_heap_after_bytes);
     uart_puts(" heap_bytes=");
     uart_put_u32(g_event_group_heap_bytes);
+    uart_puts(" notify_extra=");
+    uart_put_u32(g_notification_extra_bytes);
+    uart_puts(" heap_after_tasks=");
+    uart_put_u32(g_heap_after_tasks_bytes);
+    uart_puts(" total_app_heap=");
+    uart_put_u32(g_total_heap_used_bytes);
     uart_puts("\r\n");
 
     for (;;) {
@@ -208,15 +274,22 @@ void sync_task(void *argument)
             g_sync_count++;
             update_wakeup_statistics(wakeup_cycles);
 
-            uart_puts("SYNC tick=");
-            uart_put_u32((uint32_t)now);
-            uart_puts(" period_ms=");
-            uart_put_u32(g_last_sync_period_ticks * portTICK_PERIOD_MS);
-            uart_puts(" wake_cycles=");
-            uart_put_u32(g_last_wakeup_cycles);
-            uart_puts(" wake_us=");
-            uart_put_u32(dwt_cycles_to_us(g_last_wakeup_cycles));
-            uart_puts("\r\n");
+            if ((g_sync_count == 1U) ||
+                ((g_sync_count % UART_LOG_INTERVAL) == 0U)) {
+                uart_puts("SYNC count=");
+                uart_put_u32(g_sync_count);
+                uart_puts(" tick=");
+                uart_put_u32((uint32_t)now);
+                uart_puts(" period_ms=");
+                uart_put_u32(g_last_sync_period_ticks * portTICK_PERIOD_MS);
+                uart_puts(" wake_cycles=");
+                uart_put_u32(g_last_wakeup_cycles);
+                uart_puts(" wake_avg_cycles=");
+                uart_put_u32(g_average_wakeup_cycles);
+                uart_puts(" wake_us=");
+                uart_put_u32(dwt_cycles_to_us(g_last_wakeup_cycles));
+                uart_puts("\r\n");
+            }
         } else {
             EventBits_t missing = expected_bits & ~bits;
 

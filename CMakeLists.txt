@@ -24,6 +24,10 @@ set(RESOURCE_MODE "0" CACHE STRING
     "Week2/Ex3 resource: 0=binary semaphore, 1=mutex")
 set(PRODUCER0_USE_NOTIFY 0 CACHE STRING
     "Week2/Ex4 sync: 0=all event-group, 1=producer0 task notification")
+set(EX4_FORCE_TIMEOUT 0 CACHE STRING
+    "Week2/Ex4: 1=delay the final producer beyond SYNC_TIMEOUT_MS")
+set(EX4_EXTRA_PRODUCER 0 CACHE STRING
+    "Week2/Ex4: 1=add one producer for the tradeoff measurement")
 get_filename_component(EXERCISE_DIR "${EXERCISE}" ABSOLUTE
     BASE_DIR "${CMAKE_SOURCE_DIR}")
 
@@ -41,8 +45,7 @@ file(RELATIVE_PATH EXERCISE_REL "${CMAKE_SOURCE_DIR}" "${EXERCISE_DIR}")
 string(REPLACE "/" "_" TARGET_NAME "${EXERCISE_REL}")
 string(REPLACE "\\" "_" TARGET_NAME "${TARGET_NAME}")
 
-project(${TARGET_NAME})
-enable_language(C ASM)
+project(${TARGET_NAME} LANGUAGES C ASM)
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Exercise: ${EXERCISE_REL}")
@@ -58,6 +61,8 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     UART_GUARD_MODE=${UART_GUARD_MODE}
     RESOURCE_MODE=${RESOURCE_MODE}
     PRODUCER0_USE_NOTIFY=${PRODUCER0_USE_NOTIFY}
+    EX4_FORCE_TIMEOUT=${EX4_FORCE_TIMEOUT}
+    EX4_EXTRA_PRODUCER=${EX4_EXTRA_PRODUCER}
 )
 
 # CubeMX-generated board support is shared by every exercise.

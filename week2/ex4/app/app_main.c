@@ -24,13 +24,15 @@ void app_main(void)
     configASSERT(status == pdPASS);
     sync_task_handle = (void *)handle;
 
-    /* Create producer_0 ... producer_(EVENT_BIT_COUNT - 1). */
-    for (uint32_t i = 0U; i < EVENT_BIT_COUNT; i++) {
+    /* Create producer_0 ... producer_(EX4_ACTIVE_PRODUCER_COUNT - 1). */
+    for (uint32_t i = 0U; i < EX4_ACTIVE_PRODUCER_COUNT; i++) {
         status = xTaskCreate(producer_task, "producer", TASK_STACK_WORDS,
                              (void *)(uintptr_t)i,
                              PRODUCER_TASK_PRIORITY, NULL);
         configASSERT(status == pdPASS);
     }
+
+    ram_debug_tasks_created();
 
     vTaskStartScheduler();
 
