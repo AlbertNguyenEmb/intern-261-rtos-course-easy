@@ -11,12 +11,18 @@
 
 Sensor tạo một mẫu mỗi `SAMPLE_PERIOD_MS = 10 ms`, nên:
 
-`f_s = \frac{1000}{10} = 100\ \text{mẫu/s}`
+$$
+f_s = \frac{1000}{10} = 100\ \text{mẫu/s}
+$$
 
 Một dòng UART trong trường hợp xấu nhất có chiều dài khoảng 33 byte.
 Với cấu hình 8N1, mỗi byte cần 10 bit:
 
-`T_{UART} = \frac{33 \times 10}{230400} \approx 1.432\ \text{ms}`
+$$
+T_{\text{UART}} = \frac{33 \times 10}{230400}
+\approx 1.432\ \text{ms}
+$$
+
 Vì thời gian truyền UART nhỏ hơn chu kỳ tạo mẫu 10 ms, UART có thể
 truyền xong một mẫu trước khi mẫu tiếp theo xuất hiện. Do đó dự đoán
 queue tối thiểu là một phần tử cho cả hai queue.
@@ -56,7 +62,10 @@ do đó queue không tích lũy và không có mẫu bị drop.
 Khi hạ baud rate xuống 9600, thời gian truyền một dòng UART trong
 trường hợp xấu nhất là:
 
-`T_{UART,9600} = \frac{33 \times 10}{9600} \approx 34.375\ \text{ms}`
+$$
+T_{\text{UART},9600} = \frac{33 \times 10}{9600}
+\approx 34.375\ \text{ms}
+$$
 
 Giá trị này lớn hơn chu kỳ tạo mẫu 10 ms, do đó UART tiêu thụ dữ liệu
 chậm hơn tốc độ filter tạo ra dữ liệu. `queue_filtered` tăng nhanh,
@@ -135,16 +144,19 @@ task nào phải chờ và dữ liệu có thể bị mất ở vị trí nào t
 
 Với moving average độ dài N, độ trễ nhóm xấp xỉ:
 
-`T_delay = (N - 1) / 2 × SAMPLE_PERIOD_MS`.
+$$
+T_{\text{delay}} = \frac{N-1}{2} \times \text{SAMPLE\_PERIOD\_MS}
+$$
 
 Với chu kỳ lấy mẫu 10 ms:
 
-- `FILTER_WINDOW = 16`: độ trễ xấp xỉ 75 ms.
-- `FILTER_WINDOW = 32`: độ trễ xấp xỉ 155 ms.
-- Độ trễ tăng thêm xấp xỉ `155 - 75 = 80 ms`.
+- `FILTER_WINDOW = 16`: độ trễ xấp xỉ $75\ \text{ms}$.
+- `FILTER_WINDOW = 32`: độ trễ xấp xỉ $155\ \text{ms}$.
+- Độ trễ tăng thêm xấp xỉ $155 - 75 = 80\ \text{ms}$.
 
 Với tín hiệu step, window 16 đạt 50% sau khoảng 8 mẫu, còn window 32 đạt
-50% sau khoảng 16 mẫu. Chênh lệch 8 mẫu tương ứng `8 × 10 = 80 ms`.
+50% sau khoảng 16 mẫu. Chênh lệch 8 mẫu tương ứng
+$8 \times 10 = 80\ \text{ms}$.
 
 Window lớn hơn làm tín hiệu mượt và giảm nhiễu tốt hơn, nhưng phản ứng
 chậm hơn và dùng thêm RAM. Ba buffer `int16_t` tăng từ 96 byte lên

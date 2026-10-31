@@ -3,9 +3,14 @@
 `student_id`: 2412477    Commit của PREDICTION.md: caad200
 
 ## 1. Ảnh đo
-Binary semaphore: `![](inversion_binsem.png)`
 
-Mutex: `![](inversion_mutex.png)`
+**Binary semaphore**
+
+![Đo priority inversion bằng binary semaphore](inversion_binsem.png)
+
+**Mutex**
+
+![Đo priority inversion bằng mutex](inversion_mutex.png)
 
 Trên mỗi ảnh, đánh dấu: thời điểm `task_high` sẵn sàng chạy (t0), thời điểm nó
 thực sự chạy (t1). Thời gian block = t1 − t0.
@@ -13,8 +18,8 @@ thực sự chạy (t1). Thời gian block = t1 − t0.
 ## 2. Bảng thời gian block
 | Cấu hình | t0 (ms) | t1 (ms) | Block (ms) | Đạt `DEADLINE_MS`? |
 |---|---|---|---|---|
-| Binary semaphore | 29|77 |48 | Không |
-| Mutex | 30|38 |8 | Có |
+| Binary semaphore | 29 | 77 | 48 | Không |
+| Mutex | 30 | 38 | 8 | Có |
 
 ## 3. Vì sao mutex ngắn hơn
 Giải thích bằng priority inheritance: `task_low` được nâng lên ưu tiên nào, khi
@@ -38,7 +43,7 @@ bạn, rồi đo lại để kiểm chứng. `task_high` còn đạt `DEADLINE_M
 Khi tăng `MID_WORK_MS` lên 80 ms, thời gian CPU mà `task_mid`
 chiếm thêm là:
 
-`80 - 40 = 40 ms`
+$80 - 40 = 40\ \text{ms}$
 
 Do đó, thời gian block dự đoán tăng khoảng 40 ms, từ 48 ms lên
 khoảng 88 ms. Kết quả đo lại là ... ms, lệch ... ms so với dự đoán.

@@ -30,6 +30,8 @@ Không nên dùng Task Notification khi một sự kiện cần đánh thức nh
 ## 4. Timeout
 Log/ảnh một lần `sync_task` bị timeout (cố tình làm 1 producer chậm hơn
 `SYNC_TIMEOUT_MS`), và giá trị trả về của `xEventGroupWaitBits` lúc đó.
+
+```text
 TIMEOUT returned=0x00000007 missing=0x00000008
 TIMEOUT returned=0x00000007 missing=0x00000008
 TIMEOUT returned=0x00000007 missing=0x00000008
@@ -39,6 +41,8 @@ TIMEOUT returned=0x00000007 missing=0x00000008
 TIMEOUT returned=0x00000007 missing=0x00000008
 TIMEOUT returned=0x00000007 missing=0x00000008
 TIMEOUT returned=0x00000007 missing=0x00000008
+```
+
 ## 5. Lệch so với dự đoán
 Mỗi mục lệch + nguyên nhân vật lý.
 
@@ -54,17 +58,19 @@ bạn, rồi đo lại để kiểm chứng.
 Với 4 producer, 13 chu kỳ khác 0 trong log hiện có là:
 `6, 6, 5, 5, 6, 5, 6, 6, 5, 6, 5, 5, 5 ms`. Trung bình:
 
-```text
-T4 = 71 / 13 = 5.46 ms
-```
+$$
+T_4 = \frac{71}{13} = 5.46\ \text{ms}
+$$
 
 Khi tăng lên 5 producer, task đồng bộ phải đợi thêm một nguồn và thời gian
 thường do producer đến cuối cùng quyết định. Nếu xem thời điểm đến phân bố gần
-đều, kỳ vọng cực đại tăng theo tỉ lệ `(5/6) / (4/5) = 25/24`. 
+đều, kỳ vọng cực đại tăng theo tỉ lệ
+$\frac{5/6}{4/5} = \frac{25}{24}$.
+
 ```text
 EX4 mode=event-group producers=5 force_timeout=0 object_bytes=24 heap_before=8184 heap_after=8152 heap_bytes=32 notify_extra=0
 SYNC count=500 tick=2845 period_ms=6 wake_cycles=1120 wake_avg_cycles=1100 wake_us=15
 ```
 
 Kết luận: thêm producer thứ 5 được dự đoán làm chu kỳ đồng bộ tăng từ
-5.46 ms lên khoảng 5.69 ms. 
+5.46 ms lên khoảng 5.69 ms.

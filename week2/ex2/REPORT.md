@@ -4,6 +4,8 @@
 
 ## 1. Lỗi tái hiện (UART_GUARD_MODE = 0)
 Log UART dán nguyên văn, đánh dấu vị trí ký tự lẫn lộn:
+
+```text
 [W0 seq=001450]AAAAAAAAAAAAAAA
 [W1 seq=001449]BBBBBBBBBBBBBBB
 [W2 seq=001442]CCCCCCCCCCCCCCC
@@ -39,6 +41,7 @@ CCCCCCCCCCC[W0 seq=00CCCC
 [W0 seq=001460]AAAAAAAAAAAAAAA
 [W1 seq=001459]BBBBBBBBBBBBBBB
 [W2 seq=001452]CCCCCCCCCCCCCCC
+```
 
 Tái hiện lại bao nhiêu lần / bao nhiêu lần thấy lỗi: 3 / 3.
 
@@ -57,7 +60,11 @@ message đã truyền xong.
 
 Công thức quy đổi:
 
-`latency_us = elapsed_cycles / (SystemCoreClock / 1,000,000)`.
+$$
+\text{latency}_{\mu s}
+= \frac{\text{elapsed\_cycles}}
+{\text{SystemCoreClock}/1{,}000{,}000}
+$$
 
 Với `SystemCoreClock = 72 MHz`, một microsecond tương ứng 72 cycle.
 
@@ -68,9 +75,6 @@ thêm race condition.
 Trong mode gatekeeper, writer chờ task notification từ gatekeeper sau khi
 UART truyền đủ 32 byte. Vì vậy số đo bao gồm toàn bộ thời gian từ lúc writer
 muốn in đến lúc UART truyền xong, không chỉ thời gian enqueue.
-## 3. Vì sao critical section nguy hiểm nhất
-Giải thích bằng số đo của bạn: đoạn in dài bao nhiêu us khi ở trong critical
-section, và điều đó chặn ngắt nào trong hệ thống bao lâu.
 ## 3. Vì sao critical section nguy hiểm nhất
 
 Critical section truyền đủ 32 byte trong khoảng trung bình
@@ -125,7 +129,11 @@ nhiều nhất? Trả lời bằng số từ dữ liệu của bạn, rồi đo 
 Với ba writer, gatekeeper có latency trung bình 9372 µs. Khi tăng lên sáu
 writer, một writer có thể phải chờ gatekeeper phục vụ gần sáu message:
 
-`6 × 32 × 10 / 115200 ≈ 16668 µs`.
+$$
+T_{6\ \text{writer}}
+= \frac{6 \times 32 \times 10}{115200}
+\approx 16{,}668\ \mu s
+$$
 
 Sau khi cộng queue và context switch, dự đoán latency
 gatekeeper khoảng 18–20 ms. Gatekeeper chịu ảnh hưởng rõ nhất vì toàn bộ
