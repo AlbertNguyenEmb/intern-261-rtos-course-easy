@@ -179,7 +179,7 @@ void producer_task(void *argument)
         random_state ^= random_state << 5;
         delay_ms = 1U + (random_state % NOTIFY_PERIOD_MS);
         vTaskDelay(pdMS_TO_TICKS(delay_ms));
-
+    // Mode 3
 #if EX4_FORCE_TIMEOUT
         if (idx == (EX4_ACTIVE_PRODUCER_COUNT - 1U)) {
             vTaskDelay(pdMS_TO_TICKS(SYNC_TIMEOUT_MS + 20U));
@@ -187,6 +187,7 @@ void producer_task(void *argument)
 #endif
 
 #if PRODUCER0_USE_NOTIFY
+        //Mode 1 dung de give
         if (idx == 0U) {
             s_signal_cycle = dwt_get_cycles();
             xTaskNotifyGive((TaskHandle_t)sync_task_handle);
@@ -242,6 +243,7 @@ void sync_task(void *argument)
         TickType_t now;
 
 #if PRODUCER0_USE_NOTIFY
+        // Mode 1
         uint32_t notified;
 
         notified = ulTaskNotifyTake(pdTRUE,
@@ -255,7 +257,8 @@ void sync_task(void *argument)
         success = ((notified > 0U) &&
                    ((bits & expected_bits) == expected_bits))
                       ? pdTRUE : pdFALSE;
-#else
+#else   
+        //Mode 0
         expected_bits = ALL_BITS_MASK;
         bits = xEventGroupWaitBits(s_events, expected_bits,
                                    pdTRUE, pdTRUE,

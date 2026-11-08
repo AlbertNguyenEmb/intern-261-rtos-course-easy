@@ -76,8 +76,7 @@ void task_low(void *argument)
             HAL_GPIO_WritePin(TRACE_GPIO_PORT, LOW_TRACE_PIN, GPIO_PIN_SET);
             // Doi va check priority de sau nay debug
             for (uint32_t i = 0U; i < (LOW_HOLD_MS * 10U); i++) {
-                g_low_effective_priority =
-                uxTaskPriorityGet(NULL);
+                g_low_effective_priority = uxTaskPriorityGet(NULL);
 
                 busy_wait_us(WORK_SLICE_US);
             }

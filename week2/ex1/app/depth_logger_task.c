@@ -31,14 +31,11 @@ void depth_logger_task(void *argument)
         if (index < DEPTH_LOG_CAPACITY) {
             TickType_t now = xTaskGetTickCount();
 
-            g_depth_time_ms[index] =
-                (uint16_t)((now - start_tick) * portTICK_PERIOD_MS);
+            g_depth_time_ms[index] = (uint16_t)((now - start_tick) * portTICK_PERIOD_MS);
 
-            g_raw_depth[index] =
-                (uint8_t)uxQueueMessagesWaiting(queue_raw);
+            g_raw_depth[index] = (uint8_t)uxQueueMessagesWaiting(queue_raw);
 
-            g_filtered_depth[index] =
-                (uint8_t)uxQueueMessagesWaiting(queue_filtered);
+            g_filtered_depth[index] = (uint8_t)uxQueueMessagesWaiting(queue_filtered);
 
             /* Tăng count cuối cùng để đánh dấu mẫu đã ghi hoàn chỉnh. */
             g_depth_sample_count = index + 1U;
