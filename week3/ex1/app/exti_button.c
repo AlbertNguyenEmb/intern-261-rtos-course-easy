@@ -40,7 +40,7 @@ void exti_button_init(void)
     gpio.Pull = GPIO_PULLUP;
     HAL_GPIO_Init(GPIOB, &gpio);
 
-    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
+    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 10, 0);
 }
 
 void exti_button_isr_handler(void)
