@@ -12,7 +12,7 @@ Ta có 64 >= 80 → sai.
 | Cấu hình | Dự đoán (us) | Đo được (us) | Đạt `LATENCY_BUDGET_US`? |
 |---|---|---|---|
 | Có `portYIELD_FROM_ISR` | 10,67 us| Đạt | |
-| Không có `portYIELD_FROM_ISR` | | | |
+| Không có `portYIELD_FROM_ISR` | 100 us| Không đạt| |
 
 Ảnh logic analyzer đính kèm cho cả 2 cấu hình.
 ![Mô phỏng khi có yield](with_yield.png)

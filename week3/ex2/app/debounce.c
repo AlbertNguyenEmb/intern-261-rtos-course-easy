@@ -1,64 +1,79 @@
 /* Week 3 / Ex2 -- debounce via one-shot timer + long-press via auto-reload
  * timer. Native FreeRTOS API only.
  */
-#include <stdio.h>
-
 #include "FreeRTOS.h"
+#include "task.h"
 #include "timers.h"
 
 #include "main.h"
 #include "params.h"
 #include "debounce.h"
+#include "uart_log.h"
 
 static TimerHandle_t s_debounce_timer;
 static TimerHandle_t s_longpress_timer;
+static uint8_t s_pressed;
 
 static void debounce_callback(TimerHandle_t xTimer)
 {
     (void)xTimer;
 
-    /* TODO 1: printf/HAL_UART "PRESS" + xTaskGetTickCount(). This is the
-     *         stable-press event, DEBOUNCE_MS after the last edge.
-     *
-     * TODO 2 (temporary, for the README step-4 experiment ONLY): add
-     *         vTaskDelay(pdMS_TO_TICKS(50)) here, capture what happens to
-     *         longpress_timer's callback timing in your REPORT.md, then
-     *         DELETE this line again before you submit. A callback that
-     *         blocks here is blocking the ONE daemon task every other
-     *         software timer in the system also depends on. */
+    TickType_t stamp = xTaskGetTickCount();
+    uint8_t pressed = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11) == GPIO_PIN_RESET;
+
+    if (pressed == s_pressed) {
+        return;
+    }
+
+    s_pressed = pressed;
+
+    HAL_GPIO_WritePin(
+        GPIOA,
+        GPIO_PIN_8,
+        pressed ? GPIO_PIN_SET : GPIO_PIN_RESET
+    );
+
+    uart_log_event(pressed ? UART_LOG_PRESS : UART_LOG_RELEASE, stamp);
+    vTaskDelay(50);
 }
 
 static void longpress_callback(TimerHandle_t xTimer)
 {
     (void)xTimer;
 
-    /* TODO 3: printf/HAL_UART "HELD" + xTaskGetTickCount(). Fires once per
-     *         LONGPRESS_MS while the button stays down. */
+    TickType_t stamp = xTaskGetTickCount();
+    if (!s_pressed || HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_11) != GPIO_PIN_RESET) {
+        return;
+    }
+    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_7);
+    uart_log_event(UART_LOG_HELD, stamp);
 }
 
 void debounce_init(void)
 {
-    /* TODO 4: s_debounce_timer = xTimerCreate(..., pdMS_TO_TICKS(DEBOUNCE_MS),
-     *         pdFALSE, NULL, debounce_callback); -- pdFALSE = one-shot.
-     *         s_longpress_timer = xTimerCreate(..., pdMS_TO_TICKS(LONGPRESS_MS),
-     *         pdTRUE, NULL, longpress_callback); -- pdTRUE = auto-reload.
-     *         Check both handles non-NULL. Do NOT xTimerStart() either here --
-     *         they are driven entirely from debounce_on_edge(). */
+    /* Timers remain dormant until an EXTI edge sends their first command. */
+    s_debounce_timer = xTimerCreate("DB", pdMS_TO_TICKS(DEBOUNCE_MS), pdFALSE, NULL, debounce_callback);
+    configASSERT(s_debounce_timer);
+
+    s_longpress_timer = xTimerCreate("LP", pdMS_TO_TICKS(LONGPRESS_MS), pdTRUE, NULL, longpress_callback);
+    configASSERT(s_longpress_timer);
 }
 
 void debounce_on_edge(uint8_t pin_is_high)
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+    BaseType_t task_woken = pdFALSE;
+    BaseType_t status;
 
-    /* TODO 5: xTimerResetFromISR(s_debounce_timer, &xHigherPriorityTaskWoken)
-     *         on every edge -- this is what swallows bounce: each new edge
-     *         restarts the DEBOUNCE_MS countdown, so the callback only fires
-     *         once the line has been quiet for DEBOUNCE_MS. */
+    /* Every new edge restarts the debounce countdown. */
+    status = xTimerResetFromISR(s_debounce_timer, &task_woken);
+    configASSERT(status == pdPASS);
 
-    /* TODO 6: if (pin_is_high) xTimerStartFromISR(s_longpress_timer, ...);
-     *         else xTimerStopFromISR(s_longpress_timer, ...); */
-
-    /* TODO 7: portYIELD_FROM_ISR(xHigherPriorityTaskWoken). */
-    (void)pin_is_high;
-    (void)xHigherPriorityTaskWoken;
+    /* Pull-up wiring: low = pressed, high = released. */
+    if (!pin_is_high) {
+        status = xTimerStartFromISR(s_longpress_timer, &task_woken);
+    } else {
+        status = xTimerStopFromISR(s_longpress_timer, &task_woken);
+    }
+    configASSERT(status == pdPASS);
+    portYIELD_FROM_ISR(task_woken);
 }
