@@ -28,6 +28,11 @@ set(EX4_FORCE_TIMEOUT 0 CACHE STRING
     "Week2/Ex4: 1=delay the final producer beyond SYNC_TIMEOUT_MS")
 set(EX4_EXTRA_PRODUCER 0 CACHE STRING
     "Week2/Ex4: 1=add one producer for the tradeoff measurement")
+set(W3EX3_SYNC_LOG 0 CACHE STRING
+    "Week3/Ex3: 0=separate logger task, 1=blocking UART log in parser")
+if(NOT W3EX3_SYNC_LOG MATCHES "^[01]$")
+    message(FATAL_ERROR "W3EX3_SYNC_LOG must be 0 or 1")
+endif()
 get_filename_component(EXERCISE_DIR "${EXERCISE}" ABSOLUTE
     BASE_DIR "${CMAKE_SOURCE_DIR}")
 
@@ -63,6 +68,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PRODUCER0_USE_NOTIFY=${PRODUCER0_USE_NOTIFY}
     EX4_FORCE_TIMEOUT=${EX4_FORCE_TIMEOUT}
     EX4_EXTRA_PRODUCER=${EX4_EXTRA_PRODUCER}
+    W3EX3_SYNC_LOG=${W3EX3_SYNC_LOG}
 )
 
 # CubeMX-generated board support is shared by every exercise.
