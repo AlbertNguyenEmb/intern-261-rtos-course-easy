@@ -9,7 +9,7 @@ extern EventGroupHandle_t supervisor_events;
 /* Bit assignments -- one per monitored task, up to SUPERVISOR_BITS. */
 #define SUPERVISOR_BIT_ALPHA   (1u << 0)
 #define SUPERVISOR_BIT_BETA    (1u << 1)
-
+#define SUPERVISOR_BIT_STATS  (1u << 2)
 void supervisor_init(void);
 
 /* Call from task_alpha/task_beta's loop once per iteration that makes real

@@ -1,6 +1,6 @@
 #ifndef RUNTIME_STATS_H
 #define RUNTIME_STATS_H
-
+#include <stdint.h>
 /* DWT CYCCNT based time base for configGENERATE_RUN_TIME_STATS. Wired into
  * FreeRTOSConfig.h via portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() and
  * portGET_RUN_TIME_COUNTER_VALUE() -- see app/FreeRTOSConfig.deltas. */

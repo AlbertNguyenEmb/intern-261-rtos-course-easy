@@ -17,13 +17,16 @@ void runtime_stats_timer_init(void)
      *         DEMCR TRCENA bit, zero DWT->CYCCNT, DWT->CTRL CYCCNTENA bit).
      *         If you already have week1/ex2's dwt_init(), the sequence is
      *         identical -- do not invent a second mechanism. */
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0U;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 uint32_t runtime_stats_timer_value(void)
 {
     /* TODO 2: return DWT->CYCCNT. This is portGET_RUN_TIME_COUNTER_VALUE()'s
      *         implementation -- wire it up in FreeRTOSConfig.deltas. */
-    return 0;
+    return DWT_CYCCNT;
 }
 
 void runtime_stats_task(void *argument)
