@@ -6,6 +6,11 @@
 
 extern EventGroupHandle_t supervisor_events;
 
+extern volatile uint32_t g_wdg_feed_count;
+extern volatile uint32_t g_wdg_miss_count;
+extern volatile uint32_t g_boot_was_iwdg;
+extern volatile TickType_t g_wdg_last_feed_tick;
+
 /* Bit assignments -- one per monitored task, up to SUPERVISOR_BITS. */
 #define SUPERVISOR_BIT_ALPHA   (1u << 0)
 #define SUPERVISOR_BIT_BETA    (1u << 1)

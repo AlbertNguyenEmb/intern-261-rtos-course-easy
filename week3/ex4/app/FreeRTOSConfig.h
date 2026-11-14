@@ -3,7 +3,7 @@
 
 #include "../../../week1/ex1/app/FreeRTOSConfig.h"
 #include "runtime_stats.h"
-
+#define configSTATS_BUFFER_MAX_LENGTH 512U
 /* Hai task sử dụng mutex. */
 #undef configUSE_MUTEXES
 #define configUSE_MUTEXES 1

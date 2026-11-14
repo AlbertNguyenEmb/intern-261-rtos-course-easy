@@ -17,6 +17,8 @@
 static SemaphoreHandle_t s_mutex_a;
 static SemaphoreHandle_t s_mutex_b;
 
+volatile unsigned long g_alpha_cycles = 0;
+volatile unsigned long g_beta_cycles = 0;
 void deadlock_demo_init(void)
 {
     s_mutex_a = xSemaphoreCreateMutex();
@@ -38,7 +40,11 @@ void task_alpha(void *argument)
 
         xSemaphoreGive(s_mutex_b);
         xSemaphoreGive(s_mutex_a);
-
+        if (g_alpha_cycles == 100U) {
+            vTaskDelay(pdMS_TO_TICKS(600));
+        }
+        g_alpha_cycles++;
+        supervisor_checkin(SUPERVISOR_BIT_ALPHA);
         /* TODO (step 4 of README, after the deadlock is fixed): call
          *       supervisor_checkin(SUPERVISOR_BIT_ALPHA) here, AFTER both
          *       mutexes are released -- that is what makes the check-in mean
@@ -54,15 +60,16 @@ void task_beta(void *argument)
     (void)argument;
 
     for (;;) {
-        xSemaphoreTake(s_mutex_b, portMAX_DELAY);
-        vTaskDelay(pdMS_TO_TICKS(5)); /* simulated UART buffer access time */
         xSemaphoreTake(s_mutex_a, portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(5)); /* simulated UART buffer access time */
+        xSemaphoreTake(s_mutex_b, portMAX_DELAY);
 
         /* ... shared work using both resources ... */
 
         xSemaphoreGive(s_mutex_a);
         xSemaphoreGive(s_mutex_b);
-
+        g_beta_cycles++;
+        supervisor_checkin(SUPERVISOR_BIT_BETA);
         /* TODO (step 4 of README, after the deadlock is fixed): call
          *       supervisor_checkin(SUPERVISOR_BIT_BETA) here, AFTER both
          *       mutexes are released. */
