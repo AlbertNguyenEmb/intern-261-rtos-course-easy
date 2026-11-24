@@ -48,7 +48,7 @@ Task xử lý có priority 3 để xử lý ngay khi queue có mẫu. Task đọ
    | Queue mẫu: 32 × 8 B | 256 B | |
    | Queue log: 32 × 16 B | 512 B | | 
    | **Tổng queue + stack mọi task** | **4352 B** | |
-| **Tổng** | 4352 | So với `MAX_HEAP_BYTES` : 11264 B | dư 6912 B
+| **Tổng** | 4352 | So với `MAX_HEAP_BYTES` : 11264 B dư 6912 B |
 
 ## 4. Lựa chọn API đồng bộ
 Queue / event group / stream buffer — vì sao chọn cái này cho pipeline này.
