@@ -18,7 +18,7 @@ void app_main(void)
     /* TODO: xTaskCreate(logger_task, ...) at the priority you justified in
      *       week4/ex1/REPORT.md section 1. Do not pick priorities
      *       differently here without updating the design doc. */
-
+    xTaskCreate()
     vTaskStartScheduler();
 
     for (;;) {

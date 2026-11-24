@@ -14,7 +14,7 @@ Ngắt lấy mẫu: mỗi 2 ms
 Task đọc MPU6050 — priority 2
         │ đọc dữ liệu, gắn timestamp/sequence
         ▼
-Queue mẫu — dự kiến 8 phần tử
+Queue mẫu — dự kiến 32 phần tử
         │
         ▼
 Task xử lý — priority 3
@@ -31,19 +31,24 @@ Task xử lý có priority 3 để xử lý ngay khi queue có mẫu. Task đọ
 ## 2. Timing budget
 | Đại lượng | Công thức / nguồn số liệu | Giá trị |
 |---|---|---|
-| Chu kỳ lấy mẫu | 1 / `SAMPLE_RATE_HZ` | 2.000 µs |
-| Latency ISR→task (đo thật, week3/ex1) | | 10.67 us |
-| Thời gian xử lý 1 mẫu (ước lượng) | | 242,5 µs|
-| Tổng so với `ISR_TO_PROC_DEADLINE_US` | | Đạt / Không đạt |
-
+| Chu kỳ lấy mẫu | 1 / 500 Hz | 2000 µs |
+| Latency ISR → Task | Đo thực tế Week 3/Ex1 | 10.67 µs |
+| Thời gian đọc I2C | 9 × 9 × 2.5 | 202.5 µs | Đo 9 byte mỗi khung byte 9 bit mỗi lần truyền mất 2.5 us
+| Context switch | Ước lượng | 8 µs |
+| Tính toán và lọc | Ước lượng | 30 µs |
+| Tổng so với `ISR_TO_PROC_DEADLINE_US` |  **10.67 + 202.5 + 8 + 30 = 251.17 µs**| Đạt |
 ## 3. RAM budget
 | Thành phần | Kích thước | Ghi chú |
 |---|---|---|
-| Queue (độ dài × cỡ phần tử) | 8 × 16 = 128 B| |
-| Stack task lấy mẫu |256 × 4 = 1.024 B| 256 phần tử stack|
-| Stack task xử lý |192 × 4 = 768 B | |
-| Stack task ghi UART | 256 × 4 = 1.024 B| |
-| **Tổng** | 2176 | So với `MAX_HEAP_BYTES` | dư 
+  | Stack task lấy mẫu | 768 B | |
+   | Stack task xử lý | 1024 B | |
+   | Stack task UART | 768 B | |
+   | Stack Idle task | 512 B | |
+   | Stack timer task | 512 B | | 
+   | Queue mẫu: 32 × 8 B | 256 B | |
+   | Queue log: 32 × 16 B | 512 B | | 
+   | **Tổng queue + stack mọi task** | **4352 B** | |
+| **Tổng** | 4352 | So với `MAX_HEAP_BYTES` : 11264 B | dư 6912 B
 
 ## 4. Lựa chọn API đồng bộ
 Queue / event group / stream buffer — vì sao chọn cái này cho pipeline này.
