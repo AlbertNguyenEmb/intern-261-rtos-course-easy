@@ -56,5 +56,25 @@ Dùng task notification từ ISR để đánh thức task đọc, vì ISR chỉ 
 ## 5. Xử lý khi hàng đợi đầy
 Drop mẫu mới hay mẫu cũ? Có đếm số mẫu bị rớt để báo cáo ở ex3 không?
 Nếu queue mẫu đầy, task đọc không chờ kéo dài; bỏ mẫu mới và tăng raw_drop_count. Nếu queue log đầy, task xử lý không chờ UART; bỏ bản ghi mới và tăng log_drop_count. Mẫu có sequence/timestamp để nhận biết khoảng dữ liệu bị thiếu.
-## 6. Mentor duyệt
+## 6. Kiểm tra băng thông UART
+UART sử dụng baud rate 115200, cấu hình 8N1
+(1 start bit, 8 data bits, 1 stop bit).
+
+| Đại lượng | Công thức | Giá trị |
+|---|---|---:|
+| Tần số lấy mẫu | SAMPLE_RATE_HZ | 500 mẫu/s |
+| Kích thước bản ghi | 16 bytes/mẫu | 16 B |
+| Băng thông UART tối đa | 115200 / 10 | 11520 B/s |
+| Băng thông cần thiết | 500 × 16 | 8000 B/s |
+| Kích thước một block | 32 × 16 | 512 B |
+| Thời gian gom một block | 32 / 500 | 64 ms |
+| Thời gian truyền một block | 512 × 10 / 115200 | 44.44 ms |
+| Thời gian dự phòng | 64 - 44.44 | 19.56 ms |
+| Mức sử dụng băng thông | 8000 / 11520 × 100% | 69.44% |
+| Băng thông còn lại | 11520 - 8000 | 3520 B/s |
+
+**Kết luận:** UART 115200 baud đáp ứng tốc độ 500 mẫu/s.
+Thời gian truyền một block nhỏ hơn thời gian tạo một block mới
+(44.44 ms < 64 ms), với băng thông dự phòng 30.56%.
+## 7. Mentor duyệt
 Chữ ký / ghi chú của mentor sau buổi duyệt thiết kế: ______
