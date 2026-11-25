@@ -14,6 +14,16 @@
 typedef struct {
     uint32_t timestamp;
     /* TODO: int16_t accel_x, accel_y, accel_z, gyro_x, gyro_y, gyro_z; */
+    int16_t aceel_x;
+    int16_t aceel_y;
+    int16_t aceel_z;
+
+    int16_t temp;
+
+    int16_t gyro_x;
+    int16_t gyro_y;
+    int16_t gyro_z;
+
 } sensor_sample_t;
 
 #endif /* DATALOGGER_TYPES_H */

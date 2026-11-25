@@ -25,5 +25,7 @@
 3. Nếu task xử lý tạm thời chậm hơn ISR lấy mẫu (ví dụ do một task khác
    chiếm CPU), hàng đợi của bạn đầy sau bao nhiêu mẫu? Điều gì xảy ra với
    mẫu tiếp theo trong thiết kế của bạn?
+   Hàng đợi của em sẽ đầy sau 32 mẫu. Mẫu tiếp theo nếu vẫn không xử lý kịp sẽ bị drop.
 4. Bạn dự đoán priority nào (ISR task xử lý vs. task ghi UART) sẽ cho kết
    quả đạt deadline tốt hơn? Vì sao?
+   Priority của task isr xử lý sẽ tốt hơn so với task ghi uart vì ghi uart là xuất log ra ngoài hình chứ không ảnh hưởng nhiều bằng độ chính xác khi lấy mẫu và ít rủi ro drop mẫu hơn.

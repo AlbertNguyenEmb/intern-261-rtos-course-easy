@@ -20,6 +20,12 @@
    + Kết quả: Khi ISR thoát ra, Task gốc mất lớp bảo vệ, bị các ngắt khác chen vào giữa chừng khi đang sửa dữ liệu dở dang, dẫn đến xung đột dữ liệu (race condition) và làm hỏng bộ nhớ Queue.
 2. Sau khi sửa đúng API `FromISR`, dự đoán số mẫu ghi UART mỗi giây =
    `SAMPLE_RATE_HZ` / `LOG_BLOCK_SAMPLES` khối/giây. Tính ra con số.
+   Khi sửa đúng api thì mỗi khối mất số mẫu ghi UART mỗi giây =
+   `500` / `32` = 15.625 khối/giây
 3. Với `UART_BAUD` của bạn, một khối `LOG_BLOCK_SAMPLES` mẫu mất bao lâu để
    truyền xong? Có nguy cơ UART chưa gửi xong khối cũ mà khối mới đã sẵn
    sàng không?
+   Thời gian sinh một khối mới là 32 mẫu / 500 mẫu/s = 0.064s
+   Mỗi byte uart truyền mất 10/115200 = 86.81us => mỗi khối gồm 32 mẫu
+   $$T_{\text{tx}} = 32 \times B_{\text{sample}} \times 86.81\ \mu\text{s}$$ = $44.44\text{ ms}$ 
+   => < 64 ms thỏa mãn điều kiện.
