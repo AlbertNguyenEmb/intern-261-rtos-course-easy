@@ -6,10 +6,10 @@
 
 extern QueueHandle_t sample_queue;
 
-/* Starts a hardware timer (TIMx, not TIM4 -- that one is the HAL timebase)
- * that interrupts at SAMPLE_RATE_HZ and calls sampler_timer_callback() from
- * its ISR. */
+/* Configure TIM2 only; sampler_task starts it after its handle is valid. */
 void sampler_isr_init(void);
+void sampler_isr_start(void);
+void sampler_task(void *arg);
 
 /* Called from the timer ISR. Reads one sample and pushes it to
  * sample_queue. Runs in interrupt context -- every FreeRTOS call made here

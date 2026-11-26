@@ -33,10 +33,12 @@ Task xử lý có priority 3 để xử lý ngay khi queue có mẫu. Task đọ
 |---|---|---|
 | Chu kỳ lấy mẫu | 1 / 500 Hz | 2000 µs |
 | Latency ISR → Task | Đo thực tế Week 3/Ex1 | 10.67 µs |
-| Thời gian đọc I2C | 9 × 9 × 2.5 | 202.5 µs | Đo 9 byte mỗi khung byte 9 bit mỗi lần truyền mất 2.5 us
+| Thời gian đọc I2C | 9 × 9 × 2.5 | 202.5 µs | Đo 9 byte mỗi khung byte 9 bit mỗi lần truyền mất 2.5 us (Ngoài deadline)
 | Context switch | Ước lượng | 8 µs |
 | Tính toán và lọc | Ước lượng | 30 µs |
-| Tổng so với `ISR_TO_PROC_DEADLINE_US` |  **10.67 + 202.5 + 8 + 30 = 251.17 µs**| Đạt |
+| Tổng so với `ISR_TO_PROC_DEADLINE_US` |  **10.67 + 8 + 30 = 48.67 µs**| Đạt |
+Khi đọc queue thì chỉ có 8 mẫu nhưng lại đó đến 9 byte bởi vì HAL_I2C_Mem_Read thì giao thức I2C thực chất chỉ đọc 6 byte data và 3 byte đầu là 3 byte header. Do đó trong queue chỉ đọc 6 byte dữ liệu và 2 byte số thứ tự seq là đủ 8 byte.
+T_proc và context switch chỉ là ước lượng.
 ## 3. RAM budget
 | Thành phần | Kích thước | Ghi chú |
 |---|---|---|
@@ -46,7 +48,10 @@ Task xử lý có priority 3 để xử lý ngay khi queue có mẫu. Task đọ
    | Stack Idle task | 512 B | |
    | Stack timer task | 512 B | | 
    | Queue mẫu: 32 × 8 B | 256 B | |
-   | Queue log: 32 × 16 B | 512 B | | 
+   | Queue log: 32 × 16 B | 512 B | |
+   | TCB | 5 x 96 B | 480 B | 5 task mỗi task cần một pcb_t để quản lý thông tin |
+   | Overhead queue | 2 x 80 | 160 B | 2 queue mỗi queue cần queue_t để quản lý cũng như vùng lưu trữ dữ liệu |
+   | Block buffer UART | 32 × 16 B | 512 B |Bộ đệm gom 1 block 32 mẫu trước khi truyền UART |
    | **Tổng queue + stack mọi task** | **4352 B** | |
 | **Tổng** | 4352 | So với `MAX_HEAP_BYTES` : 11264 B dư 6912 B |
 
@@ -56,6 +61,7 @@ Dùng task notification từ ISR để đánh thức task đọc, vì ISR chỉ 
 ## 5. Xử lý khi hàng đợi đầy
 Drop mẫu mới hay mẫu cũ? Có đếm số mẫu bị rớt để báo cáo ở ex3 không?
 Nếu queue mẫu đầy, task đọc không chờ kéo dài; bỏ mẫu mới và tăng raw_drop_count. Nếu queue log đầy, task xử lý không chờ UART; bỏ bản ghi mới và tăng log_drop_count. Mẫu có sequence/timestamp để nhận biết khoảng dữ liệu bị thiếu.
+Khi hàng đợi đầy drop mẫu mới vì trong cơ chế rtos queue hoạt động theo fifo phải nhận rút khi receive ra thì mới lấy mẫu ra được cũng như là không dùng pormaxdelay để bảo toàn flow hoạt động.
 ## 6. Kiểm tra băng thông UART
 UART sử dụng baud rate 115200, cấu hình 8N1
 (1 start bit, 8 data bits, 1 stop bit).

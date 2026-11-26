@@ -14,7 +14,13 @@
 #include "sampler_isr.h"
 #include "logger_task.h"
 
+extern UART_HandleTypeDef huart1;
+extern QueueHandle_t log_queue;
+volatile uint32_t uart_errors, uart_blocks;
+volatile UBaseType_t logger_stack_free;
+
 static sensor_sample_t block[LOG_BLOCK_SAMPLES];
+volatile UBaseType_t queue_high_water_mark = 0;
 
 void logger_task(void *argument)
 {
@@ -22,7 +28,7 @@ void logger_task(void *argument)
     uint32_t filled = 0;
 
     for (;;) {
-        /* TODO 1: xQueueReceive(sample_queue, &block[filled], portMAX_DELAY).
+        /* TODO 1: xQueueReceive(log_queue, &block[filled], portMAX_DELAY).
          *
          * TODO 2: once filled == LOG_BLOCK_SAMPLES, HAL_UART_Transmit (or
          *         _DMA) the whole block out over USART1 at UART_BAUD, then
@@ -33,7 +39,30 @@ void logger_task(void *argument)
          * TODO 3: if you need to know whether the queue is backing up
          *         (ex1 REPORT.md section 5), check uxQueueMessagesWaiting()
          *         here and report the high-water mark in week4/ex3. */
-        (void)filled;
-        vTaskDelay(1);
+
+        if (xQueueReceive(log_queue,
+                  &block[filled],
+                  portMAX_DELAY) == pdTRUE) {
+            filled++;
+
+            if (filled == LOG_BLOCK_SAMPLES) {
+                if (HAL_UART_Transmit(
+                    &huart1,
+                    (uint8_t *)block,
+                    sizeof(block),
+                    100
+                ) != HAL_OK) uart_errors++;
+                else uart_blocks++;
+
+                filled = 0;
+            }
+        }
+        logger_stack_free = uxTaskGetStackHighWaterMark(NULL);
+        UBaseType_t waiting = uxQueueMessagesWaiting(log_queue);
+
+        if (waiting > queue_high_water_mark)
+        {
+            queue_high_water_mark = waiting;
+        }
     }
 }

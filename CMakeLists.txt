@@ -119,3 +119,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     freertos_kernel
     freertos_config
 )
+
+if(EXERCISE_REL MATCHES "^week4/")
+ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/week4/ex1/app)
+endif()
