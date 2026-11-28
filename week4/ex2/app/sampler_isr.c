@@ -72,10 +72,12 @@ void TIM2_IRQHandler(void)
 }
 
 void sampler_timer_callback(void)
-{
+{   
+    GPIOA->BSRR = GPIO_PIN_0;
     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
     timer_count++;
     vTaskNotifyGiveFromISR(sampler_handle, &xHigherPriorityTaskWoken);
+    GPIOA->BSRR = (uint32_t)GPIO_PIN_0 << 16;
     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 

@@ -16,4 +16,9 @@ void board_uart_init(void) {
     huart1.Init.Mode = UART_MODE_TX;
     huart1.Init.OverSampling = UART_OVERSAMPLING_16;
     if (HAL_UART_Init(&huart1) != HAL_OK) Error_Handler();
+
+    gpio.Pin = GPIO_PIN_0 | GPIO_PIN_1;
+    gpio.Mode = GPIO_MODE_OUTPUT_PP;
+    gpio.Speed = GPIO_SPEED_FREQ_HIGH;
+    HAL_GPIO_Init(GPIOA, &gpio);
 }

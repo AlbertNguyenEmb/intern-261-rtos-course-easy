@@ -16,12 +16,15 @@ void measure_timer_init(void)
     /* TODO 1: identical DWT enable sequence as week3/ex4
      *         runtime_stats_timer_init() -- if that task already exists in
      *         this project, call it directly instead of duplicating. */
+    CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk;
+    DWT->CYCCNT = 0;
+    DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;
 }
 
 uint32_t measure_timer_value(void)
 {
     /* TODO 2: return DWT->CYCCNT, same as week3/ex4. */
-    return 0;
+    return DWT->CYCCNT;
 }
 
 void measure_task(void *argument)

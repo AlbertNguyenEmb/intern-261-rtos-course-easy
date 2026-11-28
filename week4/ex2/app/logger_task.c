@@ -3,7 +3,7 @@
  * Native FreeRTOS API only.
  */
 #include <string.h>
-
+#include <stdio.h>
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
@@ -43,19 +43,34 @@ void logger_task(void *argument)
         if (xQueueReceive(log_queue,
                   &block[filled],
                   portMAX_DELAY) == pdTRUE) {
+            static char tx_buf[LOG_BLOCK_SAMPLES * 64]; 
             filled++;
 
             if (filled == LOG_BLOCK_SAMPLES) {
-                if (HAL_UART_Transmit(
-                    &huart1,
-                    (uint8_t *)block,
-                    sizeof(block),
-                    100
-                ) != HAL_OK) uart_errors++;
-                else uart_blocks++;
-
-                filled = 0;
+            int offset = 0;
+            for (uint32_t i = 0; i < LOG_BLOCK_SAMPLES; i++) {
+                int n = snprintf(
+                    tx_buf + offset,
+                    sizeof(tx_buf) - (size_t)offset,
+                    "%lu,%d,%d,%d,%d,%d,%d,%d\r\n",
+                    (unsigned long)block[i].timestamp,
+                    block[i].aceel_x, block[i].aceel_y, block[i].aceel_z,
+                    block[i].temp,
+                    block[i].gyro_x, block[i].gyro_y, block[i].gyro_z
+                );
+                if (n <= 0 || (size_t)(offset + n) >= sizeof(tx_buf)) {
+                    break;
+                }
+                offset += n;
             }
+
+            if (HAL_UART_Transmit(&huart1, (uint8_t *)tx_buf, (uint16_t)offset, 200) != HAL_OK) {
+                uart_errors++;
+            } else {
+                uart_blocks++;
+            }
+            filled = 0;
+        }
         }
         logger_stack_free = uxTaskGetStackHighWaterMark(NULL);
         UBaseType_t waiting = uxQueueMessagesWaiting(log_queue);

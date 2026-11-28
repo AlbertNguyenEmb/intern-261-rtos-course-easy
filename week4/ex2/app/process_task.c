@@ -11,9 +11,11 @@ void process_task(void *arg) {
     sensor_sample_t sample;
     for (;;) {
         if (xQueueReceive(sample_queue, &sample, portMAX_DELAY) == pdPASS) {
+            GPIOA->BSRR = GPIO_PIN_1;
             /* No filter specified: forward raw samples unchanged. */
             if (xQueueSend(log_queue, &sample, 0) != pdPASS) log_drop_count++;
             process_stack_free = uxTaskGetStackHighWaterMark(NULL);
+            GPIOA->BSRR = (uint32_t)GPIO_PIN_1 << 16;
         }
     }
 }

@@ -10,6 +10,13 @@
 #include "sampler_isr.h"
 #include "logger_task.h"
 #include "datalogger_types.h"
+#include "measure_task.h"
+
+TaskHandle_t xLoggerHandle;
+TaskHandle_t xSamplerHandle;
+TaskHandle_t xProcessHandle;
+TaskHandle_t xStatsHandle;
+TaskHandle_t xNoiseHandle;
 
 static void DWT_Init(void)
 {
@@ -34,12 +41,16 @@ void app_main(void)
      *       differently here without updating the design doc. */
     log_queue = xQueueCreate(32, sizeof(sensor_sample_t));
     configASSERT(log_queue != NULL);
-    BaseType_t result = xTaskCreate(logger_task, "Logger", 256, NULL, 1, NULL);
+    BaseType_t result = xTaskCreate(logger_task, "Logger", 256, NULL, 1, &xLoggerHandle);
     configASSERT(result == pdPASS);
-    result = xTaskCreate(sampler_task, "Sampler", 256, NULL, 2, NULL);
+    result = xTaskCreate(sampler_task, "Sampler", 256, NULL, 2, &xSamplerHandle);
     configASSERT(result == pdPASS);
-    result = xTaskCreate(process_task, "Process", 256, NULL, 3, NULL);
+    result = xTaskCreate(process_task, "Process", 256, NULL, 3, &xProcessHandle);
+    configASSERT(result == pdPASS); 
+    result = xTaskCreate(measure_task, "Measure", 512, NULL, 3, &xStatsHandle);
     configASSERT(result == pdPASS);
+    result = xTaskCreate(noise_task, "Noise", 128, NULL, 2, &xNoiseHandle);
+    configASSERT(result == pdPASS); 
     vTaskStartScheduler();
 
     for (;;) {
